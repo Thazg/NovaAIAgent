@@ -1,0 +1,10 @@
+Title: CLIP Model for Images to Textual Prompts Based on Top-k Neighbors
+
+Authors: Xin Zhang, Xin Zhang, YeMing Cai, Tianzhi Jia
+
+Published: 2024-01-18T07:28:17Z
+
+Categories: [{'term': 'cs.CV', 'scheme': 'http://arxiv.org/schemas/atom', 'label': None}, {'term': 'cs.AI', 'scheme': 'http://arxiv.org/schemas/atom', 'label': None}]
+
+Abstract:
+Text-to-image synthesis, a subfield of multimodal generation, has gained significant attention in recent years. We propose a cost-effective approach for image-to-prompt generation that leverages generative models to generate textual prompts without the need for large amounts of annotated data. We divide our method into two stages: online stage and offline stage. We use a combination of the CLIP model and K-nearest neighbors (KNN) algorithm. The proposed system consists of two main parts: an offline task and an online task. Our method owns the highest metric 0.612 among these models, which is 0.013, 0.055, 0.011 higher than Clip, Clip + KNN(top 10) respectively.

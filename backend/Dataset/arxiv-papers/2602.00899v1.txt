@@ -1,0 +1,13 @@
+Title: Domain-Adaptive and Scalable Dense Retrieval for Content-Based Recommendation
+
+Authors: Mritunjay Pandey
+
+Published: 2026-01-31T20:58:23Z
+
+Categories: [{'term': 'cs.LG', 'scheme': 'http://arxiv.org/schemas/atom', 'label': None}, {'term': 'cs.IR', 'scheme': 'http://arxiv.org/schemas/atom', 'label': None}]
+
+Abstract:
+E-commerce recommendation and search commonly rely on sparse keyword matching (e.g., BM25), which breaks down under vocabulary mismatch when user intent has limited lexical overlap with product metadata. We cast content-based recommendation as recommendation-as-retrieval: given a natural-language intent signal (a query or review), retrieve the top-K most relevant items from a large catalog via semantic similarity.
+  We present a scalable dense retrieval system based on a two-tower bi-encoder, fine-tuned on the Amazon Reviews 2023 (Fashion) subset using supervised contrastive learning with Multiple Negatives Ranking Loss. We construct training pairs from review text (as a query proxy) and item metadata (as the positive document) and fine-tune on 50,000 sampled interactions with a maximum sequence length of 500 tokens.
+  For efficient serving, we combine FAISS HNSW indexing with an ONNX Runtime inference pipeline using INT8 dynamic quantization. On a review-to-title benchmark over 826,402 catalog items, our approach improves Recall@10 from 0.26 (BM25) to 0.66, while meeting practical latency and model-size constraints: 6.1 ms median CPU inference latency (batch size 1) and a 4x reduction in model size.
+  Overall, we provide an end-to-end, reproducible blueprint for taking domain-adapted dense retrieval from offline training to CPU-efficient serving at catalog scale.

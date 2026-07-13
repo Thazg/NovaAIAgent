@@ -1,0 +1,10 @@
+Title: Seeing is Believing: Mitigating Hallucination in Large Vision-Language Models via CLIP-Guided Decoding
+
+Authors: Ailin Deng, Zhirui Chen, Bryan Hooi
+
+Published: 2024-02-23T12:57:16Z
+
+Categories: [{'term': 'cs.CV', 'scheme': 'http://arxiv.org/schemas/atom', 'label': None}, {'term': 'cs.AI', 'scheme': 'http://arxiv.org/schemas/atom', 'label': None}, {'term': 'cs.CL', 'scheme': 'http://arxiv.org/schemas/atom', 'label': None}, {'term': 'cs.LG', 'scheme': 'http://arxiv.org/schemas/atom', 'label': None}, {'term': 'cs.MM', 'scheme': 'http://arxiv.org/schemas/atom', 'label': None}]
+
+Abstract:
+Large Vision-Language Models (LVLMs) are susceptible to object hallucinations, an issue in which their generated text contains non-existent objects, greatly limiting their reliability and practicality. Current approaches often rely on the model's token likelihoods or other internal information, instruction tuning on additional datasets, or incorporating complex external tools. We first perform empirical analysis on sentence-level LVLM hallucination, finding that CLIP similarity to the image acts as a stronger and more robust indicator of hallucination compared to token likelihoods. Motivated by this, we introduce our CLIP-Guided Decoding (CGD) approach, a straightforward but effective training-free approach to reduce object hallucination at decoding time. CGD uses CLIP to guide the model's decoding process by enhancing visual grounding of generated text with the image. Experiments demonstrate that CGD effectively mitigates object hallucination across multiple LVLM families while preserving the utility of text generation. Codes are available at https://github.com/d-ailin/CLIP-Guided-Decoding.

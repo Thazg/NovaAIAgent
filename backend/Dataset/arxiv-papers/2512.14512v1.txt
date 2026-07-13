@@ -1,0 +1,10 @@
+Title: Two Bayesian Approaches to Dynamic Gaussian Bayesian Networks with Intra- and Inter-Slice Edges
+
+Authors: Kezhuo Li, Marco Grzegorczyk
+
+Published: 2025-12-16T15:47:07Z
+
+Categories: [{'term': 'stat.CO', 'scheme': 'http://arxiv.org/schemas/atom', 'label': None}]
+
+Abstract:
+Gaussian Dynamic Bayesian Networks (GDBNs) are a widely used tool for learning network structures from continuous time-series data. To capture both time-lagged and contemporaneous dependencies, advanced GDBNs allow for dynamic inter-slice edges as well as static intra-slice edges. In the literature, two Bayesian modeling approaches have been developed for GDBNs. Both build on and extend the well-known Gaussian BGe score. We refer to them as the mean-adjusted BGe (mBGe) and the extended BGe (eBGe) models. In this paper, we contrast the two models and compare their performance empirically. The main finding of our study is that the two models induce different equivalence classes of network structures. In particular, the equivalence classes implied by the eBGe model are non-standard, and we propose a new variant of the DAG-to-CPDAG algorithm to identify them. To the best of our knowledge, these non-standard equivalence classes have not been previously reported.

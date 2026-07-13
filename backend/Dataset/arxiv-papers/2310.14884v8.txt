@@ -1,0 +1,10 @@
+Title: Budgeted Embedding Table For Recommender Systems
+
+Authors: Yunke Qu, Tong Chen, Quoc Viet Hung Nguyen, Hongzhi Yin
+
+Published: 2023-10-23T12:53:22Z
+
+Categories: [{'term': 'cs.IR', 'scheme': 'http://arxiv.org/schemas/atom', 'label': None}]
+
+Abstract:
+At the heart of contemporary recommender systems (RSs) are latent factor models that provide quality recommendation experience to users. These models use embedding vectors, which are typically of a uniform and fixed size, to represent users and items. As the number of users and items continues to grow, this design becomes inefficient and hard to scale. Recent lightweight embedding methods have enabled different users and items to have diverse embedding sizes, but are commonly subject to two major drawbacks. Firstly, they limit the embedding size search to optimizing a heuristic balancing the recommendation quality and the memory complexity, where the trade-off coefficient needs to be manually tuned for every memory budget requested. The implicitly enforced memory complexity term can even fail to cap the parameter usage, making the resultant embedding table fail to meet the memory budget strictly. Secondly, most solutions, especially reinforcement learning based ones derive and optimize the embedding size for each each user/item on an instance-by-instance basis, which impedes the search efficiency. In this paper, we propose Budgeted Embedding Table (BET), a novel method that generates table-level actions (i.e., embedding sizes for all users and items) that is guaranteed to meet pre-specified memory budgets. Furthermore, by leveraging a set-based action formulation and engaging set representation learning, we present an innovative action search strategy powered by an action fitness predictor that efficiently evaluates each table-level action. Experiments have shown state-of-the-art performance on two real-world datasets when BET is paired with three popular recommender models under different memory budgets.
