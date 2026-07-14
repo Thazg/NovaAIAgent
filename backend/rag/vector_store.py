@@ -19,9 +19,48 @@ B2_VECTORIZER_PATH = "index/vectorizer.pkl"
 B2_METADATA_PATH = "index/metadata.jsonl"
 
 
+ACRONYM_MAP = {
+    "rag": "retrieval augmented generation",
+    "qa": "question answering",
+    "nlp": "natural language processing",
+    "ml": "machine learning",
+    "ai": "artificial intelligence",
+    "nn": "neural network",
+    "cnn": "convolutional neural network",
+    "rnn": "recurrent neural network",
+    "lstm": "long short term memory",
+    "gpt": "generative pre trained transformer",
+    "bert": "bidirectional encoder representations from transformers",
+    "tf": "tensorflow",
+    "svm": "support vector machine",
+    "pca": "principal component analysis",
+    "ir": "information retrieval",
+    "ner": "named entity recognition",
+    "pos": "part of speech",
+    "tfidf": "term frequency inverse document frequency",
+    "llm": "large language model",
+    "sota": "state of the art",
+    "db": "database",
+    "ui": "user interface",
+    "api": "application programming interface",
+    "sse": "server sent events",
+}
+
+def expand_query(query: str) -> str:
+    words = re.findall(r"[a-zA-Z]\w*", query)
+    expanded = set(words)
+    for w in words:
+        wl = w.lower()
+        if wl in ACRONYM_MAP:
+            expanded.update(ACRONYM_MAP[wl].split())
+    if len(expanded) > len(words):
+        return query + " " + " ".join(sorted(expanded - set(w.lower() for w in words)))
+    return query
+
+
 class TfidfVectorStore:
     def __init__(self, vectorizer: TfidfVectorizer = None, documents: List[Dict[str, Any]] = None):
-        self.vectorizer = vectorizer or TfidfVectorizer(stop_words="english", max_df=0.9)
+        self.vectorizer = vectorizer or TfidfVectorizer(stop_words="english", max_df=0.9, ngram_range=(1, 2))
         self.documents = documents or []
         self.document_matrix = None
 
@@ -105,10 +144,11 @@ class TfidfVectorStore:
         if not self.documents or self.document_matrix is None or self.document_matrix.shape[0] == 0:
             return []
 
-        query_vector = self.vectorizer.transform([query])
+        expanded = expand_query(query)
+        query_vector = self.vectorizer.transform([expanded])
         scores = cosine_similarity(query_vector, self.document_matrix)[0]
 
-        query_terms = {w.lower() for w in re.findall(r"[a-zA-Z]\w+", query) if len(w) > 3}
+        query_terms = {w.lower() for w in re.findall(r"[a-zA-Z]\w+", expanded) if len(w) > 3}
         candidate_count = min(top_k * 4, len(self.documents))
 
         ranked = []

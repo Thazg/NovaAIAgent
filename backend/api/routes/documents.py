@@ -34,26 +34,34 @@ async def summarize_document(request: dict):
     except FileNotFoundError:
         raise HTTPException(status_code=404, detail="Vector store not found")
 
+    filename_lower = filename.lower()
     chunks = [
         doc.get("content", "")
         for doc in store.documents
-        if doc.get("metadata", {}).get("file_name") == filename
+        if doc.get("metadata", {}).get("file_name", "").lower() == filename_lower
     ]
 
     if not chunks:
         raise HTTPException(status_code=404, detail="No chunks found for this file")
 
     full_text = "\n\n".join(chunks)
-    truncated = len(full_text) > 8000
+    max_chars = 20000
+    truncated = len(full_text) > max_chars
     if truncated:
-        full_text = full_text[:8000] + "\n\n[... content truncated ...]"
+        full_text = full_text[:max_chars] + "\n\n[... content truncated ...]"
 
     prompt = (
-        f"Summarize the following document. Structure your response into:\n"
-        f"- **Overview**: 1-2 sentences describing what the document is about\n"
-        f"- **Key Points**: bullet list of the main ideas\n"
-        f"- **Conclusion**: the main takeaway\n\n"
-        f"Respond in the same language as the document. Keep it concise.{' Note: the document was truncated for length.' if truncated else ''}\n\n"
+        f"You are a research assistant. Summarize the document below thoroughly but concisely.\n"
+        f"Structure your response into these sections:\n"
+        f"## Overview\n"
+        f"A brief description of what this document covers.\n\n"
+        f"## Key Points\n"
+        f"Bullet list of the main ideas, findings, or arguments.\n\n"
+        f"## Key Terms & Definitions\n"
+        f"Important terminology introduced in the document.\n\n"
+        f"## Conclusion\n"
+        f"The main takeaway or final message.\n\n"
+        f"Respond in the same language as the document.{' Note: the document was too long and was truncated.' if truncated else ''}\n\n"
         f"Document:\n{full_text}\n\n"
         f"Summary:"
     )
