@@ -94,25 +94,34 @@ async def _stream_groq(prompt: str) -> AsyncIterator[str]:
         "top_p": settings.LLM_TOP_P,
     }
 
-    try:
-        async with httpx.AsyncClient(timeout=_CHAT_TIMEOUT) as client:
-            async with client.stream(
-                "POST",
-                "https://api.groq.com/openai/v1/chat/completions",
-                json=payload,
-                headers={
-                    "Authorization": f"Bearer {api_key}",
-                    "Content-Type": "application/json",
-                },
-            ) as response:
-                if response.status_code == 401:
-                    yield "[Error: Invalid Groq API key.]"
-                    return
-                if response.status_code != 200:
-                    body = (await response.aread()).decode("utf-8", errors="replace")
-                    logger.error("Groq HTTP %s: %s", response.status_code, body[:300])
-                    yield f"[Error: Groq HTTP {response.status_code}]"
-                    return
+    import asyncio
+
+    for attempt in range(4):
+        try:
+            async with httpx.AsyncClient(timeout=_CHAT_TIMEOUT) as client:
+                async with client.stream(
+                    "POST",
+                    "https://api.groq.com/openai/v1/chat/completions",
+                    json=payload,
+                    headers={
+                        "Authorization": f"Bearer {api_key}",
+                        "Content-Type": "application/json",
+                    },
+                ) as response:
+                    if response.status_code == 429:
+                        wait = min(2 ** attempt * 2, 30)
+                        logger.warning("Groq 429 rate limited, retrying in %ds (attempt %d/4)", wait, attempt + 1)
+                        yield f"\n[Rate limited, retrying in {wait}s...]\n"
+                        await asyncio.sleep(wait)
+                        continue
+                    if response.status_code == 401:
+                        yield "[Error: Invalid Groq API key.]"
+                        return
+                    if response.status_code != 200:
+                        body = (await response.aread()).decode("utf-8", errors="replace")
+                        logger.error("Groq HTTP %s: %s", response.status_code, body[:300])
+                        yield f"[Error: Groq HTTP {response.status_code}]"
+                        return
 
                 buffer = ""
                 async for chunk in response.aiter_bytes():
@@ -136,12 +145,19 @@ async def _stream_groq(prompt: str) -> AsyncIterator[str]:
                                     yield token
                             except json.JSONDecodeError:
                                 continue
-
-    except httpx.ConnectError:
-        yield "[Error: Cannot connect to Groq API. Check your internet connection.]"
-    except Exception as exc:
-        logger.error("Groq error (%s): %s", type(exc).__name__, exc)
-        yield f"[Error: {type(exc).__name__}: {str(exc)[:200]}]"
+                return  # success, exit loop
+        except httpx.ConnectError:
+            if attempt < 3:
+                wait = min(2 ** attempt * 2, 30)
+                logger.warning("Groq connection error, retrying in %ds (attempt %d/4)", wait, attempt + 1)
+                await asyncio.sleep(wait)
+                continue
+            yield "[Error: Cannot connect to Groq API. Check your internet connection.]"
+            return
+        except Exception as exc:
+            logger.error("Groq error (%s): %s", type(exc).__name__, exc)
+            yield f"[Error: {type(exc).__name__}: {str(exc)[:200]}]"
+            return
 
 
 async def warmup_model() -> None:
