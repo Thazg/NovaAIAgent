@@ -68,8 +68,7 @@ frontend/
 
 ## Live Demo
 
-- Backend: `https://novaaiagent-4.onrender.com`
-- Frontend: deployed on Vercel (contact for URL)
+- `https://nova-ai-agent.vercel.app`
 - Tech: FastAPI · React · TypeScript · scikit-learn · Groq · Backblaze B2 · Docker
 
 ## License
