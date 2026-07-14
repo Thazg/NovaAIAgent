@@ -76,11 +76,12 @@ export const api = {
     const decoder = new TextDecoder('utf-8');
     let buffer = '';
 
-    while (true) {
-      const { done, value } = await reader.read();
-      if (done) break;
+    try {
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
 
-      buffer += decoder.decode(value, { stream: true });
+        buffer += decoder.decode(value, { stream: true });
       
       // Attempt to split by lines or SSE data format
       const lines = buffer.split('\n');
@@ -104,10 +105,17 @@ export const api = {
           } else if (parsed.action === 'search_offer') {
             onAction?.({ type: 'search_offer', query: parsed.query || '' });
           }
-        } catch (e) {
-          // Incomplete JSON or other format, ignore for now
+          } catch (e) {
+            // Incomplete JSON or other format, ignore for now
+          }
         }
       }
+    } catch (streamError: any) {
+      // StreamClosed / AbortError — expected when user cancels or connection drops
+      if (streamError.name === 'AbortError' || streamError.message?.includes('StreamClosed')) {
+        return;
+      }
+      throw streamError;
     }
   },
 
