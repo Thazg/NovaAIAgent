@@ -166,7 +166,9 @@ export const Sidebar = () => {
     avatar,
     displayName,
     theme,
-    setTheme
+    setTheme,
+    sidebarActiveTab,
+    setSidebarActiveTab,
   } = useChatStore();
 
   const [searchQuery, setSearchQuery] = useState('');
@@ -175,7 +177,8 @@ export const Sidebar = () => {
   const [aboutOpen, setAboutOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [conversationToDelete, setConversationToDelete] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<'conversations' | 'documents'>('conversations');
+  const activeTab = sidebarActiveTab;
+  const setActiveTab = setSidebarActiveTab;
 
   useEffect(() => {
     if (!sidebarOpen && activeTab === 'documents') {
@@ -412,7 +415,7 @@ export const Sidebar = () => {
                   transition={{ duration: 0.2 }}
                   className="h-full"
                 >
-                  <DocumentManager />
+                  <DocumentManager onUploadComplete={() => setActiveTab('documents')} />
                 </motion.div>
               ) : (
                 <motion.div

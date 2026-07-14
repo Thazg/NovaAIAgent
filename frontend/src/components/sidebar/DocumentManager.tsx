@@ -24,7 +24,7 @@ const FILE_TYPE_COLORS: Record<string, { bg: string; text: string }> = {
   docx: { bg: 'bg-violet-500/15', text: 'text-violet-400' },
 };
 
-export const DocumentManager = () => {
+export const DocumentManager = ({ onUploadComplete }: { onUploadComplete?: () => void }) => {
   const [documents, setDocuments] = useState<Document[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
@@ -78,6 +78,7 @@ export const DocumentManager = () => {
 
       if (uploadResult.indexed) {
         toast.success(`${uploadResult.filename} indexed (${uploadResult.chunks ?? 0} chunks)`);
+        onUploadComplete?.();
       } else {
         toast.error(uploadResult.message || 'Upload succeeded but indexing failed');
       }

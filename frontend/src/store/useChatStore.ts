@@ -19,6 +19,7 @@ interface ChatState {
   nickname: string;
   developerMode: boolean;
   language: 'auto' | 'english' | 'vietnamese';
+  sidebarActiveTab: 'conversations' | 'documents';
   
   // Actions
   setTheme: (theme: 'light' | 'dark' | 'system') => void;
@@ -31,6 +32,7 @@ interface ChatState {
   setNickname: (nickname: string) => void;
   setDeveloperMode: (mode: boolean) => void;
   setLanguage: (lang: 'auto' | 'english' | 'vietnamese') => void;
+  setSidebarActiveTab: (tab: 'conversations' | 'documents') => void;
   toggleSidebar: () => void;
   setSidebarOpen: (open: boolean) => void;
   
@@ -71,8 +73,10 @@ export const useChatStore = create<ChatState>()(
       nickname: '',
       developerMode: false,
       language: 'auto',
+      sidebarActiveTab: 'conversations',
 
       setLanguage: (language: 'auto' | 'english' | 'vietnamese') => set({ language }),
+      setSidebarActiveTab: (sidebarActiveTab: 'conversations' | 'documents') => set({ sidebarActiveTab }),
       setSettingsOpen: (settingsOpen: boolean) => set({ settingsOpen }),
       setAboutOpen: (aboutOpen: boolean) => set({ aboutOpen }),
       setCustomInstructions: (customInstructions: string) => set({ customInstructions }),

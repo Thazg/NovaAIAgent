@@ -19,6 +19,7 @@ export const ChatInput = ({ onSend, onStop }: ChatInputProps) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const isStreaming = useChatStore((state) => state.isStreaming);
   const isLoading = useChatStore((state) => state.isLoading);
+  const setSidebarActiveTab = useChatStore((state) => state.setSidebarActiveTab);
   const isBusy = isStreaming || isLoading;
   const [isRecording, setIsRecording] = useState(false);
   const recognitionRef = useRef<{
@@ -52,6 +53,7 @@ export const ChatInput = ({ onSend, onStop }: ChatInputProps) => {
       const result = await api.uploadDocument(file);
       if (result.indexed) {
         toast.success(`Indexed "${result.filename}" (${result.chunks} chunks)`);
+        setSidebarActiveTab('documents');
       } else {
         toast.error(result.message || 'Failed to index file');
       }
