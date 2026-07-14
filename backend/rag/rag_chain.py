@@ -54,7 +54,14 @@ def retrieve_context(query: str, top_k: int | None = None, allow_broad: bool = T
     if not nodes and normalized_query != query.strip():
         nodes = retriever.retrieve(query.strip(), top_k=top_k_val)
 
-    query_terms = _extract_key_terms(normalized_query)
+    # Fallback: lower min_score to zero to get any match
+    if not nodes:
+        nodes = retriever.retrieve(normalized_query, top_k=top_k_val, min_score=0.0)
+
+    # Use expanded query terms for re-ranking/filtering so acronym expansions match
+    from rag.vector_store import expand_query
+    expanded_query = expand_query(normalized_query)
+    query_terms = _extract_key_terms(expanded_query)
 
     # Two-stage: broad search if key terms missing from retrieved content
     if allow_broad and nodes and query_terms:
@@ -71,6 +78,8 @@ def retrieve_context(query: str, top_k: int | None = None, allow_broad: bool = T
                 top_k=settings.BROAD_TOP_K,
                 min_score=settings.MIN_SIMILARITY_SCORE,
             )
+            if not broad_nodes:
+                broad_nodes = retriever.retrieve(normalized_query, top_k=settings.BROAD_TOP_K, min_score=0.0)
             if broad_nodes:
                 broad_avg = sum(n.get("_score", 0) for n in broad_nodes) / len(broad_nodes)
                 if broad_avg > avg_score:

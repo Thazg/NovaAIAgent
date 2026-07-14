@@ -140,7 +140,7 @@ class TfidfVectorStore:
 
         return cls(vectorizer=vectorizer, documents=documents)
 
-    def retrieve(self, query: str, top_k: int = 5, min_score: float = 0.12) -> List[Dict[str, Any]]:
+    def retrieve(self, query: str, top_k: int = 5, min_score: float = 0.0) -> List[Dict[str, Any]]:
         if not self.documents or self.document_matrix is None or self.document_matrix.shape[0] == 0:
             return []
 
