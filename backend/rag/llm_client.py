@@ -109,11 +109,8 @@ async def _stream_groq(prompt: str) -> AsyncIterator[str]:
                     },
                 ) as response:
                     if response.status_code == 429:
-                        wait = min(2 ** attempt * 2, 30)
-                        logger.warning("Groq 429 rate limited, retrying in %ds (attempt %d/4)", wait, attempt + 1)
-                        yield f"\n[Rate limited, retrying in {wait}s...]\n"
-                        await asyncio.sleep(wait)
-                        continue
+                        yield "[Error: Groq API rate limit exceeded. Please wait a moment and try again.]"
+                        return
                     if response.status_code == 401:
                         yield "[Error: Invalid Groq API key.]"
                         return
