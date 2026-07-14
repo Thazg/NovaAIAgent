@@ -68,7 +68,11 @@ async def startup_event():
             logger.warning("Auto-indexing skipped: %s", exc)
 
     reload_vector_store()
-    n_docs = len(get_retriever().documents) if get_retriever() and get_retriever().documents else 0
+    try:
+        r = get_retriever()
+        n_docs = len(r.documents) if r and r.documents else 0
+    except FileNotFoundError:
+        n_docs = 0
     logger.info("Retriever ready. Total documents: %d. Upload documents via /documents/upload or use 'search for <topic>' to auto-download.", n_docs)
 
     await warmup_model()
