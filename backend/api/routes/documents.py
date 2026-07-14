@@ -82,6 +82,23 @@ def _list_upload_files() -> list[dict]:
     chunk_counts = _load_chunk_counts()
     files = []
 
+    if not UPLOADS_DIR.exists() or not any(UPLOADS_DIR.iterdir()):
+        try:
+            from services.remote_storage import list_files
+            remote_files = list_files("uploads/")
+            for remote_path in remote_files:
+                name = remote_path[len("uploads/"):]
+                files.append({
+                    "id": name,
+                    "name": name,
+                    "size": 0,
+                    "indexed": bool(chunk_counts.get(name)),
+                    "chunks": chunk_counts.get(name, 0),
+                })
+            return files
+        except ImportError:
+            pass
+
     search_dirs = [UPLOADS_DIR]
     if LEGACY_UPLOADS_DIR.exists() and LEGACY_UPLOADS_DIR != UPLOADS_DIR:
         search_dirs.append(LEGACY_UPLOADS_DIR)
@@ -155,6 +172,12 @@ async def upload_document(file: UploadFile = File(...)):
     file_location = UPLOADS_DIR / file.filename
     with file_location.open("wb") as buffer:
         shutil.copyfileobj(file.file, buffer)
+
+    try:
+        from services.remote_storage import upload_file
+        upload_file(f"uploads/{file.filename}", file_location)
+    except ImportError:
+        pass
 
     try:
         indexed, chunk_count, message = _index_uploaded_file(file_location)

@@ -9,8 +9,17 @@ from config.settings import settings
 STORE_FILE = Path(settings.UPLOAD_FOLDER).resolve().parent / "storage" / "conversations.json"
 STORE_FILE.parent.mkdir(parents=True, exist_ok=True)
 
+B2_CONVERSATIONS_PATH = "data/conversations.json"
+
 
 def _load_store() -> Dict[str, Dict[str, Any]]:
+    if not STORE_FILE.exists():
+        try:
+            from services.remote_storage import download_file
+            download_file(B2_CONVERSATIONS_PATH, STORE_FILE)
+        except ImportError:
+            pass
+
     if not STORE_FILE.exists():
         return {}
 
@@ -23,6 +32,11 @@ def _load_store() -> Dict[str, Dict[str, Any]]:
 
 def _save_store(data: Dict[str, Dict[str, Any]]) -> None:
     STORE_FILE.write_text(json.dumps(data, ensure_ascii=False, indent=2), encoding="utf-8")
+    try:
+        from services.remote_storage import upload_file
+        upload_file(B2_CONVERSATIONS_PATH, STORE_FILE)
+    except ImportError:
+        pass
 
 
 def _normalize_history(messages: List[Dict[str, Any]]) -> List[Dict[str, Any]]:

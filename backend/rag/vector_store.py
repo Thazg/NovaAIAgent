@@ -15,6 +15,9 @@ INDEX_DIR.mkdir(parents=True, exist_ok=True)
 VECTORIZER_FILE = INDEX_DIR / "vectorizer.pkl"
 METADATA_FILE = INDEX_DIR / "metadata.jsonl"
 
+B2_VECTORIZER_PATH = "index/vectorizer.pkl"
+B2_METADATA_PATH = "index/metadata.jsonl"
+
 
 class TfidfVectorStore:
     def __init__(self, vectorizer: TfidfVectorizer = None, documents: List[Dict[str, Any]] = None):
@@ -74,6 +77,13 @@ class TfidfVectorStore:
             for node in self.documents:
                 json.dump(node, f, ensure_ascii=False)
                 f.write("\n")
+
+        try:
+            from services.remote_storage import upload_file
+            upload_file(B2_VECTORIZER_PATH, VECTORIZER_FILE)
+            upload_file(B2_METADATA_PATH, METADATA_FILE)
+        except ImportError:
+            pass
 
     @classmethod
     def load(cls):
@@ -173,4 +183,14 @@ def build_vector_store(nodes: List[Dict[str, Any]]) -> TfidfVectorStore:
 
 
 def load_vector_store() -> TfidfVectorStore:
+    if not VECTORIZER_FILE.exists() or not METADATA_FILE.exists():
+        try:
+            from services.remote_storage import download_file
+            downloaded = download_file(B2_VECTORIZER_PATH, VECTORIZER_FILE)
+            downloaded = download_file(B2_METADATA_PATH, METADATA_FILE) or downloaded
+            if not downloaded:
+                raise FileNotFoundError("Vector store not found.")
+        except ImportError:
+            raise FileNotFoundError("Vector store not found. Build or reindex documents first.")
+
     return TfidfVectorStore.load()

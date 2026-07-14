@@ -38,5 +38,11 @@ class Settings:
         str(BACKEND_DIR / "Dataset" / "uploads"),
     )
 
+    # Backblaze B2 (S3-compatible storage)
+    B2_KEY_ID: str = os.getenv("B2_KEY_ID", "")
+    B2_APP_KEY: str = os.getenv("B2_APP_KEY", "")
+    B2_BUCKET: str = os.getenv("B2_BUCKET", "nova-ai-storage")
+    B2_ENDPOINT: str = os.getenv("B2_ENDPOINT", "https://s3.us-west-004.backblazeb2.com")
+
 
 settings = Settings()

@@ -21,3 +21,11 @@ services:
         value: 0.12
       - key: PYTHONPATH
         value: /app/backend
+      - key: B2_KEY_ID
+        sync: false
+      - key: B2_APP_KEY
+        sync: false
+      - key: B2_BUCKET
+        value: nova-ai-storage
+      - key: B2_ENDPOINT
+        value: https://s3.us-west-004.backblazeb2.com
