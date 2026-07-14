@@ -1,5 +1,8 @@
-import { Bot, Code, FileText, Search, Zap, Database } from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
+import { Bot, Code, FileText, Search, Zap, Database, Upload, Globe, Loader2 } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { api } from '../../services/api';
+import { toast } from 'sonner';
 
 const SUGGESTIONS = [
   {
@@ -54,6 +57,36 @@ const itemVariants = {
 };
 
 export const WelcomeScreen = ({ onSelectSuggestion }: { onSelectSuggestion: (text: string) => void }) => {
+  const [docCount, setDocCount] = useState<number | null>(null);
+  const [uploading, setUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    api.getDocuments().then(docs => setDocCount(docs.length)).catch(() => setDocCount(0));
+  }, []);
+
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploading(true);
+    try {
+      const result = await api.uploadDocument(file);
+      if (result.indexed) {
+        toast.success(`Indexed "${result.filename}" (${result.chunks} chunks)`);
+        const docs = await api.getDocuments();
+        setDocCount(docs.length);
+      } else {
+        toast.error(result.message || 'Failed to index file');
+      }
+    } catch {
+      toast.error('Upload failed');
+    }
+    setUploading(false);
+    if (fileInputRef.current) fileInputRef.current.value = '';
+  };
+
+  const hasDocs = docCount !== null && docCount > 0;
+
   return (
     <div className="flex-1 flex flex-col items-center justify-center p-8 w-full max-w-5xl mx-auto h-full relative select-none">
       
@@ -127,64 +160,129 @@ export const WelcomeScreen = ({ onSelectSuggestion }: { onSelectSuggestion: (tex
             transition={{ delay: 0.45 }}
             className="text-base text-muted-foreground/90 max-w-md leading-relaxed mx-auto"
           >
-            Ask questions across your documents, retrieve trusted answers, and chat intelligently with your knowledge base — entirely offline.
+            {hasDocs
+              ? "Ask questions across your documents, retrieve trusted answers, and chat intelligently with your knowledge base."
+              : "Upload documents or search the web to start asking questions."}
           </motion.p>
         </div>
       </motion.div>
 
-      {/* Suggestion cards */}
-      <motion.div
-        variants={containerVariants}
-        initial="hidden"
-        animate="show"
-        className="grid grid-cols-1 sm:grid-cols-2 gap-3 w-full max-w-[780px] relative z-10"
-      >
-        {SUGGESTIONS.map((suggestion, idx) => (
+      {/* Empty state: upload prompt */}
+      {!hasDocs && docCount === 0 && (
+        <motion.div
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.6 }}
+          className="flex flex-col items-center gap-4 w-full max-w-md relative z-10"
+        >
+          <input
+            type="file"
+            ref={fileInputRef}
+            onChange={handleFileUpload}
+            className="hidden"
+            accept=".pdf,.md,.markdown,.rst,.txt,.py,.docx"
+          />
           <motion.button
-            key={idx}
-            variants={itemVariants}
-            whileHover={{ scale: 1.02, y: -3 }}
+            whileHover={{ scale: 1.02, y: -2 }}
             whileTap={{ scale: 0.985 }}
-            onClick={() => onSelectSuggestion(suggestion.description)}
-            className={`group flex items-start gap-4 p-5 rounded-2xl border bg-card/40 hover:bg-card/70 backdrop-blur-sm shadow-sm hover:shadow-lg transition-all duration-250 text-left relative overflow-hidden ${suggestion.border} hover:shadow-lg`}
+            onClick={() => fileInputRef.current?.click()}
+            disabled={uploading}
+            className="group flex items-center gap-4 w-full p-5 rounded-2xl border border-dashed border-primary/40 bg-primary/5 hover:bg-primary/10 backdrop-blur-sm shadow-sm hover:shadow-lg transition-all duration-250 text-left relative overflow-hidden"
           >
-            {/* Gradient overlay */}
-            <div className={`absolute inset-0 bg-gradient-to-br ${suggestion.color} opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-2xl`} />
-            
-            {/* Icon */}
-            <div className={`relative z-10 p-2.5 rounded-xl bg-background/60 border border-border/50 shadow-sm group-hover:scale-110 transition-transform duration-300 ${suggestion.iconColor}`}>
-              {suggestion.icon}
+            <div className="p-2.5 rounded-xl bg-background/60 border border-border/50 shadow-sm group-hover:scale-110 transition-transform duration-300 text-primary">
+              {uploading ? <Loader2 className="w-5 h-5 animate-spin" /> : <Upload className="w-5 h-5" />}
             </div>
-
-            {/* Content */}
-            <div className="relative z-10 space-y-1.5 flex-1 min-w-0">
-              <p className="font-semibold text-sm text-foreground/90 group-hover:text-foreground transition-colors">
-                {suggestion.title}
-              </p>
+            <div className="space-y-1 flex-1 min-w-0">
+              <p className="font-semibold text-sm text-foreground/90">Upload a document</p>
               <p className="text-[13px] text-muted-foreground/75 leading-snug">
-                {suggestion.description}
+                Upload PDF, DOCX, Markdown, or TXT files to build your knowledge base
               </p>
             </div>
           </motion.button>
-        ))}
-      </motion.div>
+
+          <motion.button
+            whileHover={{ scale: 1.02, y: -2 }}
+            whileTap={{ scale: 0.985 }}
+            onClick={() => onSelectSuggestion("search for artificial intelligence")}
+            className="group flex items-center gap-4 w-full p-5 rounded-2xl border border-violet-500/20 bg-violet-500/5 hover:bg-violet-500/10 backdrop-blur-sm shadow-sm hover:shadow-lg transition-all duration-250 text-left relative overflow-hidden"
+          >
+            <div className="p-2.5 rounded-xl bg-background/60 border border-border/50 shadow-sm group-hover:scale-110 transition-transform duration-300 text-violet-400">
+              <Globe className="w-5 h-5" />
+            </div>
+            <div className="space-y-1 flex-1 min-w-0">
+              <p className="font-semibold text-sm text-foreground/90">Search the web</p>
+              <p className="text-[13px] text-muted-foreground/75 leading-snug">
+                Say "search for &lt;topic&gt;" and I'll find and download relevant PDFs automatically
+              </p>
+            </div>
+          </motion.button>
+        </motion.div>
+      )}
+
+      {/* Has docs: suggestion cards */}
+      {hasDocs && (
+        <motion.div
+          variants={containerVariants}
+          initial="hidden"
+          animate="show"
+          className="grid grid-cols-1 sm:grid-cols-2 gap-3 w-full max-w-[780px] relative z-10"
+        >
+          {SUGGESTIONS.map((suggestion, idx) => (
+            <motion.button
+              key={idx}
+              variants={itemVariants}
+              whileHover={{ scale: 1.02, y: -3 }}
+              whileTap={{ scale: 0.985 }}
+              onClick={() => onSelectSuggestion(suggestion.description)}
+              className={`group flex items-start gap-4 p-5 rounded-2xl border bg-card/40 hover:bg-card/70 backdrop-blur-sm shadow-sm hover:shadow-lg transition-all duration-250 text-left relative overflow-hidden ${suggestion.border} hover:shadow-lg`}
+            >
+              <div className={`absolute inset-0 bg-gradient-to-br ${suggestion.color} opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-2xl`} />
+              <div className={`relative z-10 p-2.5 rounded-xl bg-background/60 border border-border/50 shadow-sm group-hover:scale-110 transition-transform duration-300 ${suggestion.iconColor}`}>
+                {suggestion.icon}
+              </div>
+              <div className="relative z-10 space-y-1.5 flex-1 min-w-0">
+                <p className="font-semibold text-sm text-foreground/90 group-hover:text-foreground transition-colors">
+                  {suggestion.title}
+                </p>
+                <p className="text-[13px] text-muted-foreground/75 leading-snug">
+                  {suggestion.description}
+                </p>
+              </div>
+            </motion.button>
+          ))}
+        </motion.div>
+      )}
+
+      {/* Loading state */}
+      {docCount === null && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          className="flex items-center gap-2 text-sm text-muted-foreground/60 relative z-10"
+        >
+          <Loader2 className="h-4 w-4 animate-spin" />
+          Checking knowledge base...
+        </motion.div>
+      )}
 
       {/* Keyboard hint */}
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 1.0 }}
-        className="mt-8 flex items-center gap-2 text-[12px] text-muted-foreground/45 relative z-10"
-      >
-        <kbd className="px-1.5 py-0.5 rounded bg-muted/60 border border-border/40 font-mono text-[10px]">↵ Enter</kbd>
-        <span>to send</span>
-        <span className="mx-1 opacity-40">·</span>
-        <kbd className="px-1.5 py-0.5 rounded bg-muted/60 border border-border/40 font-mono text-[10px]">⇧ Shift+↵</kbd>
-        <span>for new line</span>
-        <span className="mx-1 opacity-40">·</span>
-        <kbd className="px-1.5 py-0.5 rounded bg-muted/60 border border-border/40 font-mono text-[10px]">Ctrl+K</kbd>
-        <span>to search</span>
-      </motion.div>
+      {hasDocs && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 1.0 }}
+          className="mt-8 flex items-center gap-2 text-[12px] text-muted-foreground/45 relative z-10"
+        >
+          <kbd className="px-1.5 py-0.5 rounded bg-muted/60 border border-border/40 font-mono text-[10px]">↵ Enter</kbd>
+          <span>to send</span>
+          <span className="mx-1 opacity-40">·</span>
+          <kbd className="px-1.5 py-0.5 rounded bg-muted/60 border border-border/40 font-mono text-[10px]">⇧ Shift+↵</kbd>
+          <span>for new line</span>
+          <span className="mx-1 opacity-40">·</span>
+          <kbd className="px-1.5 py-0.5 rounded bg-muted/60 border border-border/40 font-mono text-[10px]">Ctrl+K</kbd>
+          <span>to search</span>
+        </motion.div>
+      )}
     </div>
   );
 };
