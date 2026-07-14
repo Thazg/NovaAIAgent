@@ -146,6 +146,16 @@ async def _stream_groq(prompt: str) -> AsyncIterator[str]:
                             except json.JSONDecodeError:
                                 continue
                 return  # success, exit loop
+        except httpx.RemoteProtocolError:
+            # Stream closed mid-response — retry
+            if attempt < 3:
+                wait = min(2 ** attempt * 2, 30)
+                logger.warning("Groq stream closed, retrying in %ds (attempt %d/4)", wait, attempt + 1)
+                yield f"\n[Connection lost, retrying in {wait}s...]\n"
+                await asyncio.sleep(wait)
+                continue
+            yield "[Error: Groq connection lost after multiple retries.]"
+            return
         except httpx.ConnectError:
             if attempt < 3:
                 wait = min(2 ** attempt * 2, 30)
@@ -155,8 +165,15 @@ async def _stream_groq(prompt: str) -> AsyncIterator[str]:
             yield "[Error: Cannot connect to Groq API. Check your internet connection.]"
             return
         except Exception as exc:
-            logger.error("Groq error (%s): %s", type(exc).__name__, exc)
-            yield f"[Error: {type(exc).__name__}: {str(exc)[:200]}]"
+            err_name = type(exc).__name__
+            if attempt < 3 and any(kw in str(exc).lower() for kw in ["stream", "closed", "timeout", "reset", "eof"]):
+                wait = min(2 ** attempt * 2, 30)
+                logger.warning("Groq %s, retrying in %ds (attempt %d/4)", err_name, wait, attempt + 1)
+                yield f"\n[{err_name}, retrying in {wait}s...]\n"
+                await asyncio.sleep(wait)
+                continue
+            logger.error("Groq error (%s): %s", err_name, exc)
+            yield f"[Error: {err_name}: {str(exc)[:200]}]"
             return
 
 
