@@ -21,6 +21,27 @@ router = APIRouter()
 UPLOADS_DIR = Path(settings.UPLOAD_FOLDER).resolve()
 LEGACY_UPLOADS_DIR = (BACKEND_DIR / "uploads").resolve()
 UPLOADS_DIR.mkdir(parents=True, exist_ok=True)
+SOURCE_URLS_FILE = UPLOADS_DIR / "source_urls.json"
+
+
+def _load_source_urls() -> dict[str, str]:
+    if SOURCE_URLS_FILE.exists():
+        try:
+            with SOURCE_URLS_FILE.open("r", encoding="utf-8") as f:
+                return json.load(f)
+        except (json.JSONDecodeError, Exception):
+            pass
+    return {}
+
+
+def _save_source_urls(mapping: dict[str, str]) -> None:
+    with SOURCE_URLS_FILE.open("w", encoding="utf-8") as f:
+        json.dump(mapping, f, ensure_ascii=False, indent=2)
+    try:
+        from services.remote_storage import upload_file
+        upload_file("uploads/source_urls.json", SOURCE_URLS_FILE)
+    except ImportError:
+        pass
 
 
 @router.post("/summarize")
@@ -93,6 +114,7 @@ def _load_chunk_counts() -> dict[str, int]:
 
 def _list_upload_files() -> list[dict]:
     chunk_counts = _load_chunk_counts()
+    source_urls = _load_source_urls()
     files = []
 
     if not UPLOADS_DIR.exists() or not any(UPLOADS_DIR.iterdir()):
@@ -101,12 +123,15 @@ def _list_upload_files() -> list[dict]:
             remote_files = list_files("uploads/")
             for remote_path in remote_files:
                 name = remote_path[len("uploads/"):]
+                if name == "source_urls.json":
+                    continue
                 files.append({
                     "id": name,
                     "name": name,
                     "size": 0,
                     "indexed": bool(chunk_counts.get(name)),
                     "chunks": chunk_counts.get(name, 0),
+                    "source_url": source_urls.get(name),
                 })
             return files
         except ImportError:
@@ -123,7 +148,7 @@ def _list_upload_files() -> list[dict]:
         for file_path in sorted(folder.iterdir()):
             if not file_path.is_file():
                 continue
-            if file_path.name in seen_names:
+            if file_path.name in seen_names or file_path.name == "source_urls.json":
                 continue
             seen_names.add(file_path.name)
             files.append({
@@ -132,6 +157,7 @@ def _list_upload_files() -> list[dict]:
                 "size": file_path.stat().st_size,
                 "indexed": bool(chunk_counts.get(file_path.name)),
                 "chunks": chunk_counts.get(file_path.name, 0),
+                "source_url": source_urls.get(file_path.name),
             })
     return files
 
@@ -224,6 +250,7 @@ def clear_all_documents():
                 file_path.unlink()
                 deleted_count += 1
 
+    _save_source_urls({})
     _rebuild_full_index()
 
     return {"status": "success", "deleted": deleted_count}
@@ -240,6 +267,10 @@ def delete_document(id: str):
 
     if not deleted:
         raise HTTPException(status_code=404, detail="Document not found")
+
+    source_urls = _load_source_urls()
+    source_urls.pop(id, None)
+    _save_source_urls(source_urls)
 
     try:
         store = get_retriever()
@@ -293,20 +324,24 @@ def search_and_download(req: SearchRequest):
         if not urls:
             return {"status": "success", "downloaded": [], "message": "No PDFs found for query."}
 
+        source_urls = _load_source_urls()
         downloaded = []
         for url in urls:
             file_name = safe_pdf_filename(url)
             file_path = UPLOADS_DIR / file_name
             if file_path.exists():
                 downloaded.append({"file_name": file_name, "new": False})
+                source_urls.setdefault(file_name, url)
                 continue
             try:
                 download_pdf(url, file_path)
                 downloaded.append({"file_name": file_name, "new": True})
+                source_urls[file_name] = url
             except Exception as exc:
                 logger.warning("Failed to download %s: %s", url, exc)
 
         if downloaded:
+            _save_source_urls(source_urls)
             _rebuild_full_index()
 
         return {

@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { Trash2, RefreshCw, Search, Plus, FolderOpen, File, CheckCircle2, AlertCircle, Upload, Database, HardDrive } from 'lucide-react';
+import { Trash2, RefreshCw, Search, Plus, FolderOpen, File, CheckCircle2, AlertCircle, Upload, Database, HardDrive, ExternalLink } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
@@ -16,6 +16,7 @@ interface Document {
   status: 'indexed' | 'processing' | 'failed';
   indexed: boolean;
   chunks: number;
+  source_url?: string;
 }
 
 const FILE_TYPE_COLORS: Record<string, { bg: string; text: string }> = {
@@ -41,7 +42,7 @@ export const DocumentManager = ({ onUploadComplete }: { onUploadComplete?: () =>
     try {
       setLoading(true);
       const docs = await api.getDocuments();
-      const formattedDocs: Document[] = docs.map(doc => ({
+      const formattedDocs: Document[] = docs.map((doc: any) => ({
         id: doc.id,
         name: doc.name,
         type: doc.name.endsWith('.pdf')
@@ -53,7 +54,8 @@ export const DocumentManager = ({ onUploadComplete }: { onUploadComplete?: () =>
         uploadedAt: Date.now(),
         status: doc.indexed ? 'indexed' : 'processing',
         indexed: doc.indexed ?? false,
-        chunks: doc.chunks ?? 0
+        chunks: doc.chunks ?? 0,
+        source_url: doc.source_url
       }));
       setDocuments(formattedDocs);
     } catch (error) {
@@ -311,6 +313,18 @@ export const DocumentManager = ({ onUploadComplete }: { onUploadComplete?: () =>
                     )}>
                       {doc.status === 'indexed' ? 'Indexed' : doc.status === 'processing' ? 'Processing...' : 'Failed'}
                     </span>
+                    {doc.source_url && (
+                      <a
+                        href={doc.source_url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="ml-auto flex items-center gap-1 text-[10px] text-blue-400/70 hover:text-blue-400 transition-colors"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        <ExternalLink className="h-2.5 w-2.5" />
+                        Source
+                      </a>
+                    )}
                   </div>
                 </motion.div>
               );

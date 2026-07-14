@@ -16,6 +16,7 @@ export interface Document {
   size: number;
   indexed?: boolean;
   chunks?: number;
+  source_url?: string;
 }
 
 export interface Conversation {

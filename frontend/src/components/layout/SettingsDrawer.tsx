@@ -1,5 +1,5 @@
 import { useRef, useState, useEffect } from 'react';
-import { Settings as SettingsIcon, Monitor, User, MessageSquare, Info, Upload, Keyboard, Globe, Shield, Trash2, Heart, Code, HardDrive, Cpu, Database, FileText, Loader2 } from 'lucide-react';
+import { Settings as SettingsIcon, Monitor, User, MessageSquare, Info, Upload, Keyboard, Globe, Shield, Trash2, Heart, Code, HardDrive, Cpu, Database, FileText, Loader2, ExternalLink } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from '../ui/button';
 import { useChatStore } from '../../store/useChatStore';
@@ -501,6 +501,17 @@ export const SettingsDrawer = () => {
                                   >
                                     Summarize
                                   </button>
+                                )}
+                                {(doc as any).source_url && (
+                                  <a
+                                    href={(doc as any).source_url}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="shrink-0 ml-1 text-[10px] text-blue-400/60 hover:text-blue-400 transition-colors"
+                                    onClick={(e) => e.stopPropagation()}
+                                  >
+                                    <ExternalLink className="h-2.5 w-2.5 inline" />
+                                  </a>
                                 )}
                               </div>
                             ))}
