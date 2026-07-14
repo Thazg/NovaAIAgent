@@ -11,7 +11,7 @@ import { cn } from '../../lib/utils';
 import { api, type Document } from '../../services/api';
 
 export const SettingsDrawer = () => {
-  const { theme, setTheme, avatar, setAvatar, displayName, setDisplayName, settingsOpen, setSettingsOpen, customInstructions, setCustomInstructions, characterStyle, setCharacterStyle, nickname, setNickname, developerMode, setDeveloperMode } = useChatStore();
+  const { theme, setTheme, avatar, setAvatar, displayName, setDisplayName, settingsOpen, setSettingsOpen, customInstructions, setCustomInstructions, characterStyle, setCharacterStyle, nickname, setNickname, developerMode, setDeveloperMode, language, setLanguage } = useChatStore();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [activeSection, setActiveSection] = useState('general');
   const [documents, setDocuments] = useState<Document[]>([]);
@@ -258,6 +258,29 @@ export const SettingsDrawer = () => {
                     <div className="flex items-center justify-between">
                       <label className="text-sm font-medium text-foreground">Markdown Rendering</label>
                       <input type="checkbox" className="accent-primary h-4 w-4 rounded-sm" defaultChecked />
+                    </div>
+                    <div className="pt-2 border-t border-border/30 space-y-2">
+                      <label className="text-xs font-medium text-muted-foreground">Response Language</label>
+                      <div className="grid grid-cols-3 gap-2">
+                        {[
+                          { id: 'auto', label: 'Auto' },
+                          { id: 'english', label: 'English' },
+                          { id: 'vietnamese', label: 'Vietnamese' },
+                        ].map((l) => (
+                          <button
+                            key={l.id}
+                            onClick={() => setLanguage(l.id as any)}
+                            className={`px-3 py-2 rounded-xl text-sm font-medium transition-all ${
+                              language === l.id
+                                ? 'bg-primary text-primary-foreground shadow-sm'
+                                : 'bg-background border border-border/40 text-muted-foreground hover:border-border/70'
+                            }`}
+                          >
+                            {l.label}
+                          </button>
+                        ))}
+                      </div>
+                      <p className="text-[10px] text-muted-foreground/50">Auto detects your question's language. Force English or Vietnamese to override.</p>
                     </div>
                   </div>
                 </motion.div>

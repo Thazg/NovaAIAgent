@@ -48,14 +48,18 @@ export const api = {
     onToken: (token: string) => void,
     abortSignal?: AbortSignal,
     instructions?: string,
-    onAction?: (action: { type: string; query: string }) => void
+    onAction?: (action: { type: string; query: string }) => void,
+    language?: string
   ): Promise<void> {
+    const body: Record<string, any> = { session_id: sessionId, question, stream: true };
+    if (instructions) body.instructions = instructions;
+    if (language && language !== 'auto') body.language = language;
     const response = await fetch(`${API_BASE_URL}/chat/stream`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ session_id: sessionId, question, stream: true, instructions }),
+      body: JSON.stringify(body),
       signal: abortSignal,
     });
 

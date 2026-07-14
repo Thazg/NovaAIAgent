@@ -23,7 +23,8 @@ export const ChatArea = () => {
     isStreaming,
     customInstructions,
     characterStyle,
-    nickname
+    nickname,
+    language
   } = useChatStore();
 
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -176,7 +177,8 @@ export const ChatArea = () => {
           if (action.type === 'search_offer') {
             setSearchOffer({ query: action.query, loading: false });
           }
-        }
+        },
+        language
       );
     } catch (error: any) {
       if (error.name === 'AbortError') {
@@ -221,7 +223,9 @@ export const ChatArea = () => {
           appendStreamToMessage(currentConversationId, assistantMessageId, chunk);
         },
         abortControllerRef.current.signal,
-        buildInstructions()
+        buildInstructions(),
+        undefined,
+        language
       );
     } catch (error: any) {
       if (error.name === 'AbortError') {

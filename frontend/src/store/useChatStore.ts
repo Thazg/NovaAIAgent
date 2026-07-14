@@ -18,6 +18,7 @@ interface ChatState {
   characterStyle: string;
   nickname: string;
   developerMode: boolean;
+  language: 'auto' | 'english' | 'vietnamese';
   
   // Actions
   setTheme: (theme: 'light' | 'dark' | 'system') => void;
@@ -29,6 +30,7 @@ interface ChatState {
   setCharacterStyle: (style: string) => void;
   setNickname: (nickname: string) => void;
   setDeveloperMode: (mode: boolean) => void;
+  setLanguage: (lang: 'auto' | 'english' | 'vietnamese') => void;
   toggleSidebar: () => void;
   setSidebarOpen: (open: boolean) => void;
   
@@ -68,7 +70,9 @@ export const useChatStore = create<ChatState>()(
       characterStyle: 'warm',
       nickname: '',
       developerMode: false,
+      language: 'auto',
 
+      setLanguage: (language: 'auto' | 'english' | 'vietnamese') => set({ language }),
       setSettingsOpen: (settingsOpen: boolean) => set({ settingsOpen }),
       setAboutOpen: (aboutOpen: boolean) => set({ aboutOpen }),
       setCustomInstructions: (customInstructions: string) => set({ customInstructions }),
@@ -266,6 +270,7 @@ export const useChatStore = create<ChatState>()(
         characterStyle: state.characterStyle,
         nickname: state.nickname,
         developerMode: state.developerMode,
+        language: state.language,
       }),
     }
   )

@@ -23,6 +23,7 @@ class ChatRequest(BaseModel):
     question: str
     stream: bool = True
     instructions: str = ""
+    language: str = ""
 
 
 async def _retrieve_nodes(question: str, rewritten_question: str):
@@ -65,6 +66,7 @@ async def single_token_stream(text: str):
 async def chat_stream(request: ChatRequest):
     session_id = request.session_id
     question = request.question.strip()
+    language = request.language.strip().lower() if request.language else ""
 
     if not question:
         return StreamingResponse(
@@ -98,25 +100,37 @@ async def chat_stream(request: ChatRequest):
     except Exception:
         has_docs = False
 
+    lang_instruction = ""
+    if language == "english":
+        lang_instruction = "CRITICAL: You MUST respond in English regardless of the user's language."
+    elif language == "vietnamese":
+        lang_instruction = "CRITICAL: You MUST respond in Vietnamese regardless of the user's language."
+
     if not nodes and has_docs:
         history_text = "\n".join(
             f"{m['role']}: {m['content'][:300]}"
             for m in history[-settings.MAX_HISTORY_MESSAGES :]
         )
+        instructions = request.instructions or "No specific instructions."
+        if lang_instruction:
+            instructions = f"{lang_instruction}\n\n{instructions}"
         prompt = no_context_template.format(
             question=question,
             history=history_text,
-            instructions=request.instructions or "No specific instructions.",
+            instructions=instructions,
         )
         no_context_found = True
     elif not nodes and not has_docs:
+        instructions = request.instructions or "No specific instructions."
+        if lang_instruction:
+            instructions = f"{lang_instruction}\n\n{instructions}"
         prompt = empty_db_template.format(
             question=question,
-            instructions=request.instructions or "No specific instructions.",
+            instructions=instructions,
         )
         no_context_found = True
     else:
-        prompt = build_prompt(question, nodes, history, request.instructions)
+        prompt = build_prompt(question, nodes, history, request.instructions, lang_instruction)
         no_context_found = False
 
     logger.info("Prompt length: %d chars, retrieved %d nodes, no_context_found=%s", len(prompt), len(nodes), no_context_found)

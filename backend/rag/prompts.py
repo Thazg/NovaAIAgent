@@ -114,16 +114,19 @@ def build_context(nodes):
     return "\n\n".join(contexts)
 
 
-def build_prompt(question, nodes, history, instructions=""):
+def build_prompt(question, nodes, history, instructions="", lang_instruction=""):
     history_text = "\n".join(
         f"{message['role']}: {message['content'][:300]}"
         for message in history[-settings.MAX_HISTORY_MESSAGES :]
     )
     context = build_context(nodes)
+    final_instructions = instructions or "No specific instructions."
+    if lang_instruction:
+        final_instructions = f"{lang_instruction}\n\n{final_instructions}"
 
     return template.format(
         context=context,
         question=question,
         history=history_text,
-        instructions=instructions or "No specific instructions.",
+        instructions=final_instructions,
     )
