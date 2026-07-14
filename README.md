@@ -68,7 +68,7 @@ frontend/
 
 ## Live Demo
 
-- `https://nova-ai-agent.vercel.app`
+- `https://novaaiagent.vercel.app`
 - Tech: FastAPI · React · TypeScript · scikit-learn · Groq · Backblaze B2 · Docker
 
 ## License
