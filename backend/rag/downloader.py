@@ -4,23 +4,14 @@ from pathlib import Path
 from urllib.parse import parse_qs, quote_plus, unquote, urlparse
 
 import requests
-
-# 1. Dinh nghia cac cau lenh tim kiem nang cao (Advanced Search Queries)
-# Ep cong cu tim kiem chi tim file PDF bai giang co chua tu khoa chuyen nganh tai cac truong lon
-QUERIES = [
-    'site:stanford.edu filetype:pdf "retrieval augmented generation" slide OR lecture',
-    'site:cmu.edu filetype:pdf "dense retrieval" OR "vector database"',
-    'site:mit.edu filetype:pdf "embedding" AND "nlp" lecture',
-    'site:berkeley.edu filetype:pdf "information retrieval" transformer',
-]
-
-# 2. Tao thu muc luu tru bai giang giang duong
-DOWNLOAD_DIR = Path("E:/RAGChatBot/dataset/lecture-notes")
-DOWNLOAD_DIR.mkdir(parents=True, exist_ok=True)
+from config.settings import settings
 
 SEARCH_URL = "https://duckduckgo.com/html/"
 MAX_RESULTS_PER_QUERY = 5
 REQUEST_DELAY_SECONDS = 4
+
+DOWNLOAD_DIR = Path(settings.UPLOAD_FOLDER).resolve()
+DOWNLOAD_DIR.mkdir(parents=True, exist_ok=True)
 
 SESSION = requests.Session()
 SESSION.headers.update(
@@ -34,8 +25,6 @@ SESSION.headers.update(
         "Accept-Language": "en-US,en;q=0.9,vi;q=0.8",
     }
 )
-
-print("Dang bat dau tim kiem va tai Lecture Notes PDF...")
 
 
 def request_with_retry(url, *, params=None, stream=False, timeout=25, attempts=3):
@@ -142,44 +131,52 @@ def download_pdf(url, file_path):
             file.write(chunk)
 
 
-downloaded_count = 0
+if __name__ == "__main__":
+    QUERIES = [
+        'site:stanford.edu filetype:pdf "retrieval augmented generation" slide OR lecture',
+        'site:cmu.edu filetype:pdf "dense retrieval" OR "vector database"',
+        'site:mit.edu filetype:pdf "embedding" AND "nlp" lecture',
+        'site:berkeley.edu filetype:pdf "information retrieval" transformer',
+    ]
 
-for query in QUERIES:
-    print(f"\nDang quet: {query}")
+    downloaded_count = 0
 
-    try:
-        results = search_pdf_urls(query)
+    for query in QUERIES:
+        print(f"\nDang quet: {query}")
 
-        if not results:
-            print("   => Khong tim thay PDF nao cho truy van nay.")
-            continue
+        try:
+            results = search_pdf_urls(query)
 
-        for url in results:
-            file_name = safe_pdf_filename(url)
-            file_path = DOWNLOAD_DIR / file_name
-
-            if file_path.exists():
-                print(f"   => Da co san, bo qua: {file_name[:60]}")
+            if not results:
+                print("   => Khong tim thay PDF nao cho truy van nay.")
                 continue
 
-            print(f"Dang tai file bai giang: {file_name[:60]}")
+            for url in results:
+                file_name = safe_pdf_filename(url)
+                file_path = DOWNLOAD_DIR / file_name
 
-            try:
-                download_pdf(url, file_path)
-                print("   => Luu thanh cong!")
-                downloaded_count += 1
-            except Exception as exc:
-                if file_path.exists() and file_path.stat().st_size == 0:
-                    file_path.unlink()
-                print(f"   => Loi tai file: {exc}")
+                if file_path.exists():
+                    print(f"   => Da co san, bo qua: {file_name[:60]}")
+                    continue
 
-            time.sleep(REQUEST_DELAY_SECONDS)
+                print(f"Dang tai file bai giang: {file_name[:60]}")
 
-    except Exception as exc:
-        print(f"Loi khi quet tu khoa: {exc}")
+                try:
+                    download_pdf(url, file_path)
+                    print("   => Luu thanh cong!")
+                    downloaded_count += 1
+                except Exception as exc:
+                    if file_path.exists() and file_path.stat().st_size == 0:
+                        file_path.unlink()
+                    print(f"   => Loi tai file: {exc}")
 
-    time.sleep(REQUEST_DELAY_SECONDS)
+                time.sleep(REQUEST_DELAY_SECONDS)
 
-print("\nHOAN THANH!")
-print(f"Thu muc luu tru bai giang: {DOWNLOAD_DIR}")
-print(f"Tong so file slide bai giang PDF tai duoc: {downloaded_count}")
+        except Exception as exc:
+            print(f"Loi khi quet tu khoa: {exc}")
+
+        time.sleep(REQUEST_DELAY_SECONDS)
+
+    print("\nHOAN THANH!")
+    print(f"Thu muc luu tru bai giang: {DOWNLOAD_DIR}")
+    print(f"Tong so file slide bai giang PDF tai duoc: {downloaded_count}")

@@ -1,10 +1,8 @@
-from pathlib import Path
 from typing import Any, Dict, List
 from tqdm import tqdm
 
 MAX_CHUNK_SIZE = 1000
 CHUNK_OVERLAP = 200
-MARKDOWN_EXTENSIONS = {".md", ".markdown"}
 
 
 def chunk_text(text: str, chunk_size: int = MAX_CHUNK_SIZE, overlap: int = CHUNK_OVERLAP, file_path: str = None) -> List[str]:
@@ -31,18 +29,8 @@ def chunk_text(text: str, chunk_size: int = MAX_CHUNK_SIZE, overlap: int = CHUNK
     return chunks
 
 
-def get_splitter(file_path=None):
-    suffix = Path(file_path).suffix.lower() if file_path else ""
-    if suffix == ".py":
-        return chunk_text
-    if suffix in MARKDOWN_EXTENSIONS:
-        return chunk_text
-    return chunk_text
-
-
 def split_text(text: str, file_path=None) -> List[str]:
-    splitter = get_splitter(file_path)
-    return splitter(text, file_path=file_path) if splitter is not None else []
+    return chunk_text(text, file_path=file_path)
 
 
 def split_documents(documents: List[Any], show_progress=False) -> List[Dict[str, Any]]:
