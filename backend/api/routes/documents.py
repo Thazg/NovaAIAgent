@@ -38,9 +38,9 @@ def _save_source_urls(mapping: dict[str, str]) -> None:
     with SOURCE_URLS_FILE.open("w", encoding="utf-8") as f:
         json.dump(mapping, f, ensure_ascii=False, indent=2)
     try:
-        from services.remote_storage import upload_file, delete_file
+        from services.remote_storage import upload_file
         upload_file("uploads/source_urls.json", SOURCE_URLS_FILE)
-    except ImportError:
+    except Exception:
         pass
 
 
@@ -48,7 +48,7 @@ def _delete_remote_file(filename: str) -> None:
     try:
         from services.remote_storage import delete_file
         delete_file(f"uploads/{filename}")
-    except ImportError:
+    except Exception:
         pass
 
 
@@ -270,7 +270,7 @@ def clear_all_documents():
         for remote_path in remote_files:
             if remote_path != "uploads/source_urls.json":
                 delete_file(remote_path)
-    except ImportError:
+    except Exception:
         pass
 
     _save_source_urls({})
