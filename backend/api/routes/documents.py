@@ -38,8 +38,16 @@ def _save_source_urls(mapping: dict[str, str]) -> None:
     with SOURCE_URLS_FILE.open("w", encoding="utf-8") as f:
         json.dump(mapping, f, ensure_ascii=False, indent=2)
     try:
-        from services.remote_storage import upload_file
+        from services.remote_storage import upload_file, delete_file
         upload_file("uploads/source_urls.json", SOURCE_URLS_FILE)
+    except ImportError:
+        pass
+
+
+def _delete_remote_file(filename: str) -> None:
+    try:
+        from services.remote_storage import delete_file
+        delete_file(f"uploads/{filename}")
     except ImportError:
         pass
 
@@ -212,9 +220,10 @@ async def upload_document(file: UploadFile = File(...)):
     with file_location.open("wb") as buffer:
         shutil.copyfileobj(file.file, buffer)
 
+    uploaded_to_b2 = False
     try:
-        from services.remote_storage import upload_file
-        upload_file(f"uploads/{file.filename}", file_location)
+        from services.remote_storage import upload_file, delete_file
+        uploaded_to_b2 = upload_file(f"uploads/{file.filename}", file_location)
     except ImportError:
         pass
 
@@ -234,6 +243,11 @@ async def upload_document(file: UploadFile = File(...)):
             "dataset_path": dataset_path,
         }
     except Exception as exc:
+        if uploaded_to_b2:
+            try:
+                delete_file(f"uploads/{file.filename}")
+            except ImportError:
+                pass
         if file_location.exists():
             file_location.unlink(missing_ok=True)
         raise HTTPException(status_code=500, detail=f"Failed to upload and index document: {exc}") from exc
@@ -249,6 +263,15 @@ def clear_all_documents():
             if file_path.is_file():
                 file_path.unlink()
                 deleted_count += 1
+
+    try:
+        from services.remote_storage import list_files, delete_file
+        remote_files = list_files("uploads/")
+        for remote_path in remote_files:
+            if remote_path != "uploads/source_urls.json":
+                delete_file(remote_path)
+    except ImportError:
+        pass
 
     _save_source_urls({})
     _rebuild_full_index()
@@ -267,6 +290,8 @@ def delete_document(id: str):
 
     if not deleted:
         raise HTTPException(status_code=404, detail="Document not found")
+
+    _delete_remote_file(id)
 
     source_urls = _load_source_urls()
     source_urls.pop(id, None)
