@@ -1,6 +1,6 @@
 # Nova AI Agent
 
-A production-grade **Retrieval-Augmented Generation (RAG)** chatbot with document upload, semantic search, real-time streaming, voice input, and multi-language support. Works **100% free on cloud** — no credit card needed.
+A production-grade **Retrieval-Augmented Generation (RAG)** chatbot with document upload, web PDF search, real-time streaming, voice input, and multi-language support. Works **100% free on cloud** — no credit card needed.
 
 ![Tech Stack](https://img.shields.io/badge/FastAPI-009688?logo=fastapi&logoColor=white)
 ![Tech Stack](https://img.shields.io/badge/React-20232A?logo=react&logoColor=61DAFB)
@@ -11,19 +11,23 @@ A production-grade **Retrieval-Augmented Generation (RAG)** chatbot with documen
 
 ---
 
-## ✨ Features
+## Features
 
-- **RAG Chat** — Ask questions over uploaded documents; TF-IDF retrieval + LLM generation
+- **RAG Chat** — Ask questions over uploaded documents; TF-IDF retrieval + LLM generation with source citations
 - **Document Upload** — Upload PDF, DOCX, Markdown, TXT, Python files — auto-indexed
+- **Web PDF Search** — Say "search for <topic>" to download and index PDFs from the web
+- **Summarize** — One-click document summarization with structured output (Overview / Key Points / Conclusion)
+- **UploadGate** — First-time users must upload at least one document before chatting
 - **Real-time Streaming** — SSE-based token streaming for instant responses
 - **Voice Input** — Speech-to-text via Web Speech API (Vietnamese & English)
-- **Multi-language** — Automatically detects user language and responds accordingly
+- **Multi-language** — Auto-detect language; override via Settings (Auto / English / Vietnamese)
 - **Personalization** — Character style, nickname, custom instructions
-- **Dark/Light Mode** — System-aware theming with smooth transitions
+- **Dark/Light/System** — Theme-aware with localStorage persistence, no flash
 - **Session History** — Persistent conversation history across sessions
+- **Backblaze B2** — Cloud persistence for vector index, conversations, and uploaded documents
 - **Dockerized** — One-command local setup with docker-compose
 
-## 🏗 Architecture
+## Architecture
 
 ```
 ┌─────────────┐     ┌──────────────┐     ┌─────────────┐
@@ -35,10 +39,10 @@ A production-grade **Retrieval-Augmented Generation (RAG)** chatbot with documen
                     │  Vector Store│
                     └──────┬───────┘
                            │
-                    ┌──────▼───────┐
-                    │  Documents   │
-                    │  (PDF/MD/    │
-                    │   TXT/DOCX)  │
+                    ┌──────▼───────┐     ┌──────────────┐
+                    │  Documents   │────▶│  Backblaze   │
+                    │  (PDF/MD/    │     │  B2 (Cloud)  │
+                    │   TXT/DOCX)  │     └──────────────┘
                     └──────────────┘
 ```
 
@@ -47,15 +51,17 @@ A production-grade **Retrieval-Augmented Generation (RAG)** chatbot with documen
 - **LLM**: Groq API (free, no GPU) — also supports local Ollama
 - **Document Processing**: PyPDF, python-docx, markdown parsing with chunking
 - **Streaming**: Server-Sent Events (SSE) for real-time token output
-- **Storage**: Persistent TF-IDF index + metadata in local files
+- **Storage**: Local TF-IDF index + Backblaze B2 sync for persistence across restarts
+- **Conversations**: JSON-based session store, synced to B2
 
 ### Frontend (React)
 - **UI Library**: shadcn/ui + Tailwind CSS + Framer Motion
 - **State Management**: Zustand with localStorage persistence
 - **Streaming**: SSE consumption with real-time token rendering
+- **UploadGate**: Full-screen upload prompt before main chat
 - **Voice**: Web Speech API for microphone input
 
-## 🚀 Quick Start (Local)
+## Quick Start (Local)
 
 ### Prerequisites
 
@@ -110,13 +116,13 @@ docker compose up --build
 
 Frontend: [http://localhost:3000](http://localhost:3000) · Backend: [http://localhost:8000](http://localhost:8000)
 
-## ☁️ Deploy to Cloud (100% Free)
+## Deploy to Cloud (100% Free)
 
 ### 1. Backend → Render
 
 1. Push your repo to GitHub
 2. Go to [Render Dashboard](https://dashboard.render.com) → **New Web Service**
-3. Connect your GitHub repo (select `backend/` as root directory)
+3. Connect your GitHub repo (root directory)
 4. Render auto-detects `render.yaml` — or manually set:
    - **Runtime**: Python 3
    - **Build Command**: `pip install -r requirements.txt`
@@ -126,7 +132,9 @@ Frontend: [http://localhost:3000](http://localhost:3000) · Backend: [http://loc
      - `GROQ_API_KEY` → your key
      - `GROQ_MODEL` → `llama-3.1-8b-instant`
      - `PYTHONPATH` → `/app`
-5. Deploy (free tier — sleeps after inactivity)
+     - `B2_KEY_ID` → your Backblaze B2 key ID
+     - `B2_APP_KEY` → your Backblaze B2 app key
+5. Deploy (free tier — sleeps after inactivity, ~30s cold start)
 
 ### 2. Frontend → Vercel
 
@@ -137,39 +145,44 @@ Frontend: [http://localhost:3000](http://localhost:3000) · Backend: [http://loc
 
 > Your app is now live! When the Render backend sleeps, the first request may take ~30s to wake up.
 
-## 🛠 Tech Stack
+### 3. Backblaze B2 (Optional)
+
+Create a free B2 bucket and add `B2_KEY_ID`, `B2_APP_KEY`, `B2_BUCKET`, `B2_ENDPOINT` to your Render environment. Data persists across restarts.
+
+## Tech Stack
 
 | Layer | Technology |
 |-------|-----------|
 | Frontend | React 18, TypeScript, Vite, Tailwind CSS, shadcn/ui, Framer Motion |
 | State | Zustand + localStorage persistence |
-| Backend | Python 3.10, FastAPI, Uvicorn |
+| Backend | Python 3.12, FastAPI, Uvicorn |
 | Retrieval | TF-IDF (scikit-learn), cosine similarity |
 | LLM | Groq API (free) or local Ollama |
 | Documents | PyPDF, python-docx, markdown |
+| Cloud Storage | Backblaze B2 (S3-compatible) |
 | Streaming | Server-Sent Events (SSE) |
 | Voice | Web Speech API |
 | Container | Docker, Docker Compose |
 
-## 📁 Project Structure
+## Project Structure
 
 ```
 nova-ai-agent/
 ├── backend/
-│   ├── api/routes/          # FastAPI endpoints
-│   ├── rag/                 # RAG pipeline (vector store, prompts, LLM client)
-│   ├── config/              # Settings & environment
-│   ├── services/            # Session storage
-│   ├── Dataset/             # Document corpus & uploads
-│   ├── storage/             # Persisted vector index
-│   ├── app.py               # FastAPI application
+│   ├── api/routes/           # FastAPI endpoints
+│   ├── rag/                  # RAG pipeline (vector store, prompts, LLM client)
+│   ├── config/               # Settings & environment
+│   ├── services/             # Session storage & Backblaze B2 sync
+│   ├── Dataset/              # Document corpus & uploads
+│   ├── storage/              # Persisted vector index
+│   ├── app.py                # FastAPI application
 │   └── requirements.txt
 ├── frontend/
 │   ├── src/
-│   │   ├── components/      # React components (chat, layout, sidebar)
-│   │   ├── store/           # Zustand state management
-│   │   ├── services/        # API client
-│   │   └── types/           # TypeScript types
+│   │   ├── components/       # React components (chat, layout, sidebar)
+│   │   ├── store/            # Zustand state management
+│   │   ├── services/         # API client
+│   │   └── types/            # TypeScript types
 │   ├── Dockerfile
 │   └── nginx.conf
 ├── docker-compose.yml
@@ -177,6 +190,6 @@ nova-ai-agent/
 └── README.md
 ```
 
-## 📄 License
+## License
 
 MIT
