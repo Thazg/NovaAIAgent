@@ -139,6 +139,24 @@ export const ChatArea = () => {
     }
   }, [currentConversationId, createConversation, addMessage]);
 
+  const handleSearchAndDownload = useCallback(async (targetConvId: string, topic: string) => {
+    const msgId = addMessage(targetConvId, { role: 'assistant', content: '' });
+    const append = (text: string) => appendStreamToMessage(targetConvId, msgId, text);
+    append(`🔍 Searching and downloading PDFs about "${topic}"...\n\n`);
+    try {
+      const result = await api.searchDownload(topic, 3);
+      append(`📥 ${result.message || 'Download complete.'}\n\n`);
+      if (result.downloaded?.length > 0) {
+        const files = result.downloaded.map((d: any) => `- ${d.file_name}`).join('\n');
+        append(`**Files added:**\n${files}\n\nYou can now ask questions about these documents.`);
+      } else {
+        append('No PDFs found for this topic. Try a different search term.');
+      }
+    } catch (err: any) {
+      append(`❌ Search failed: ${err.message || 'Unknown error'}`);
+    }
+  }, [addMessage, appendStreamToMessage]);
+
   const handleSend = async (content: string) => {
     if (!content.trim()) return;
 
@@ -151,6 +169,17 @@ export const ChatArea = () => {
       role: 'user',
       content: content.trim(),
     });
+
+    const trimmed = content.trim();
+    const searchMatch = trimmed.match(/^(?:search|tìm)\s+(?:for|kiếm)?\s*(.+)/i);
+
+    if (searchMatch) {
+      const topic = searchMatch[1].trim();
+      setIsLoading(true);
+      await handleSearchAndDownload(targetConvId, topic);
+      setIsLoading(false);
+      return;
+    }
 
     setIsLoading(true);
     abortControllerRef.current = new AbortController();
@@ -167,7 +196,7 @@ export const ChatArea = () => {
 
       await api.streamMessage(
         targetConvId,
-        content.trim(),
+        trimmed,
         (chunk) => {
           appendStreamToMessage(targetConvId, assistantMessageId, chunk);
         },

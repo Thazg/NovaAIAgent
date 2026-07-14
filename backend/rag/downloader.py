@@ -66,31 +66,45 @@ def extract_duckduckgo_url(raw_href):
     return raw_href
 
 
+def _parse_duckduckgo_results(html: str) -> list[str]:
+    """Extract result URLs from DuckDuckGo HTML using multiple strategies."""
+    import re
+
+    all_hrefs = []
+
+    # Strategy 1: Standard result links with class="result__a"
+    all_hrefs.extend(re.findall(r'<a[^>]+class="result__a"[^>]+href="([^"]+)"', html))
+
+    # Strategy 2: Links with data-testid="result-title-a"
+    all_hrefs.extend(re.findall(r'<a[^>]+data-testid="result-title-a"[^>]+href="([^"]+)"', html))
+
+    # Strategy 3: Any anchor with a result-like class
+    all_hrefs.extend(re.findall(r'<a[^>]+class="[^"]*result[^"]*"[^>]+href="([^"]+)"', html))
+
+    # Deduplicate and decode
+    seen = set()
+    decoded = []
+    for href in all_hrefs:
+        url = extract_duckduckgo_url(href.replace("&amp;", "&"))
+        clean_url = url.split("#", 1)[0]
+        if clean_url not in seen:
+            seen.add(clean_url)
+            decoded.append(clean_url)
+
+    return decoded
+
+
 def search_pdf_urls(query, max_results=MAX_RESULTS_PER_QUERY):
     params = {"q": query, "kl": "us-en"}
     response = request_with_retry(SEARCH_URL, params=params)
 
-    # Dung regex nho o day de lay cac href ket qua tu HTML tinh cua DuckDuckGo.
-    # Khong can them dependency BeautifulSoup cho mot file script don gian.
-    import re
-
-    hrefs = re.findall(r'<a[^>]+class="result__a"[^>]+href="([^"]+)"', response.text)
+    result_urls = _parse_duckduckgo_results(response.text)
     pdf_urls = []
-    seen = set()
 
-    for href in hrefs:
-        url = extract_duckduckgo_url(href.replace("&amp;", "&"))
-        clean_url = url.split("#", 1)[0]
-
-        if ".pdf" not in clean_url.lower():
+    for url in result_urls:
+        if ".pdf" not in url.lower():
             continue
-
-        if clean_url in seen:
-            continue
-
-        seen.add(clean_url)
-        pdf_urls.append(clean_url)
-
+        pdf_urls.append(url)
         if len(pdf_urls) >= max_results:
             break
 

@@ -1,6 +1,7 @@
 import json
 import logging
 import os
+import re
 import shutil
 from pathlib import Path
 
@@ -43,12 +44,16 @@ async def summarize_document(request: dict):
         raise HTTPException(status_code=404, detail="No chunks found for this file")
 
     full_text = "\n\n".join(chunks)
-    if len(full_text) > 8000:
+    truncated = len(full_text) > 8000
+    if truncated:
         full_text = full_text[:8000] + "\n\n[... content truncated ...]"
 
     prompt = (
-        f"You are a research assistant. Summarize the following document concisively, "
-        f"covering the key points and main takeaways. Respond in the same language as the document.\n\n"
+        f"Summarize the following document. Structure your response into:\n"
+        f"- **Overview**: 1-2 sentences describing what the document is about\n"
+        f"- **Key Points**: bullet list of the main ideas\n"
+        f"- **Conclusion**: the main takeaway\n\n"
+        f"Respond in the same language as the document. Keep it concise.{' Note: the document was truncated for length.' if truncated else ''}\n\n"
         f"Document:\n{full_text}\n\n"
         f"Summary:"
     )
@@ -269,7 +274,14 @@ def search_and_download(req: SearchRequest):
             search_pdf_urls,
         )
 
-        urls = search_pdf_urls(req.query, max_results=req.max_results)
+        clean_query = re.sub(r'^(?:search|tìm)\s+(?:for|kiếm)?\s*', '', req.query, flags=re.IGNORECASE).strip()
+        if not clean_query:
+            clean_query = req.query
+        search_query = f'{clean_query} filetype:pdf'
+
+        urls = search_pdf_urls(search_query, max_results=req.max_results)
+        if not urls:
+            urls = search_pdf_urls(clean_query, max_results=req.max_results)
         if not urls:
             return {"status": "success", "downloaded": [], "message": "No PDFs found for query."}
 
