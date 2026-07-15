@@ -15,6 +15,7 @@ function Particles({ theme }: { theme: string }) {
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
+    const isDark = theme === 'dark';
     let animId: number;
     const PARTICLE_COUNT = 160;
     const particles: {
@@ -58,7 +59,6 @@ function Particles({ theme }: { theme: string }) {
 
     const draw = (time: number) => {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
-      const isDark = theme === 'dark';
       const mx = mouseRef.current.x;
       const my = mouseRef.current.y;
       const isActive = mx > -5000;
