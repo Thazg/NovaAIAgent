@@ -2,7 +2,7 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { v4 as uuidv4 } from 'uuid';
 import type { Conversation, Message } from '../types';
-import { auth } from '../services/api';
+import { auth, api } from '../services/api';
 
 interface ChatState {
   // Auth
@@ -90,12 +90,31 @@ export const useChatStore = create<ChatState>()(
       login: async (username: string, password: string) => {
         const res = await auth.login(username, password);
         set({ token: res.token, userId: res.user_id, username, displayName: username });
+        try {
+          const convs = await api.getConversations(res.token);
+          const mapped: Conversation[] = convs.map((c: any) => ({
+            id: c.id,
+            title: c.title || 'New Chat',
+            messages: (c.messages || []).map((m: any) => ({
+              id: m.id || uuidv4(),
+              role: m.role || 'user',
+              content: m.content || '',
+              createdAt: m.createdAt || Date.now(),
+            })),
+            createdAt: c.createdAt || Date.now(),
+            updatedAt: c.updatedAt || Date.now(),
+            pinned: c.pinned || false,
+          }));
+          set({ conversations: mapped, currentConversationId: mapped.length > 0 ? mapped[0].id : null });
+        } catch {
+          // Keep existing conversations from localStorage if network fails
+        }
       },
       register: async (username: string, password: string) => {
         const res = await auth.register(username, password);
         set({ token: res.token, userId: res.user_id, username, displayName: username });
       },
-      logout: () => set({ token: null, userId: null, username: null, conversations: [], currentConversationId: null }),
+      logout: () => set({ token: null, userId: null, username: null, currentConversationId: null }),
 
       setLanguage: (language: 'auto' | 'english' | 'vietnamese') => set({ language }),
       setSidebarActiveTab: (sidebarActiveTab: 'conversations' | 'documents') => set({ sidebarActiveTab }),
@@ -126,26 +145,33 @@ export const useChatStore = create<ChatState>()(
           conversations: [newConversation, ...state.conversations],
           currentConversationId: newId,
         }));
+        api.createConversation().catch(() => {});
         return newId;
       },
 
       setCurrentConversation: (id: string) => set({ currentConversationId: id }),
 
-      deleteConversation: (id: string) => set((state: ChatState) => {
-        const filtered = state.conversations.filter((c: Conversation) => c.id !== id);
-        return {
-          conversations: filtered,
-          currentConversationId: state.currentConversationId === id 
-            ? (filtered.length > 0 ? filtered[0].id : null) 
-            : state.currentConversationId
-        };
-      }),
+      deleteConversation: (id: string) => {
+        api.deleteConversation(id).catch(() => {});
+        set((state: ChatState) => {
+          const filtered = state.conversations.filter((c: Conversation) => c.id !== id);
+          return {
+            conversations: filtered,
+            currentConversationId: state.currentConversationId === id 
+              ? (filtered.length > 0 ? filtered[0].id : null) 
+              : state.currentConversationId
+          };
+        });
+      },
 
-      renameConversation: (id: string, title: string) => set((state: ChatState) => ({
-        conversations: state.conversations.map((c: Conversation) => 
-          c.id === id ? { ...c, title, updatedAt: Date.now() } : c
-        )
-      })),
+      renameConversation: (id: string, title: string) => {
+        api.updateConversation(id, title).catch(() => {});
+        set((state: ChatState) => ({
+          conversations: state.conversations.map((c: Conversation) => 
+            c.id === id ? { ...c, title, updatedAt: Date.now() } : c
+          )
+        }));
+      },
 
       pinConversation: (id: string) => set((state: ChatState) => ({
         conversations: state.conversations.map((c: Conversation) => 

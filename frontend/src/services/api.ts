@@ -261,8 +261,11 @@ export const api = {
   },
 
   // Conversations API
-  async getConversations(): Promise<Conversation[]> {
-    const response = await fetch(`${API_BASE_URL}/conversation`, { headers: authHeaders() });
+  async getConversations(token?: string): Promise<Conversation[]> {
+    const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+    const t = token || getToken();
+    if (t) headers['Authorization'] = `Bearer ${t}`;
+    const response = await fetch(`${API_BASE_URL}/conversation`, { headers });
     if (!response.ok) {
       throw new Error(`API error: ${response.statusText}`);
     }
