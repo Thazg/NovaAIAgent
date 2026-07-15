@@ -26,7 +26,7 @@ export const Layout = () => {
   }, [theme]);
 
   return (
-    <div className="flex h-screen w-full overflow-hidden text-foreground">
+    <div className="flex h-dvh w-full overflow-hidden text-foreground">
       {/* Sidebar */}
       <Sidebar />
 
@@ -47,7 +47,7 @@ export const Layout = () => {
                 </SheetTrigger>
                 <SheetContent side="left" hideClose className="p-0 border-r-0 bg-background/95 backdrop-blur-2xl w-[85vw] max-w-[340px]">
                   <div className="h-full w-full">
-                    <Sidebar forceShow />
+                    <Sidebar forceShow onClose={() => setMobileSheetOpen(false)} />
                   </div>
                 </SheetContent>
               </Sheet>

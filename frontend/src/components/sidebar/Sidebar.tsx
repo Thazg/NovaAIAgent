@@ -150,7 +150,7 @@ const GroupLabel = ({ label }: { label: string }) => (
   </motion.div>
 );
 
-export const Sidebar = ({ forceShow }: { forceShow?: boolean }) => {
+export const Sidebar = ({ forceShow, onClose }: { forceShow?: boolean; onClose?: () => void }) => {
   const {
     conversations,
     currentConversationId,
@@ -328,25 +328,23 @@ export const Sidebar = ({ forceShow }: { forceShow?: boolean }) => {
           </TooltipProvider>
         </motion.div>
         
-        {!forceShow && (
-          <Button 
-            variant="ghost" 
-            size="icon" 
-            onClick={handleToggleSidebar}
-            className={cn(
-              "shrink-0 text-muted-foreground/60 hover:text-foreground hover:bg-muted/50 rounded-xl transition-all h-8 w-8",
-              sidebarOpen ? "" : "mt-1"
-            )}
-            aria-label={sidebarOpen ? "Collapse sidebar" : "Expand sidebar"}
+        <Button 
+          variant="ghost" 
+          size="icon" 
+          onClick={forceShow ? onClose : handleToggleSidebar}
+          className={cn(
+            "shrink-0 text-muted-foreground/60 hover:text-foreground hover:bg-muted/50 rounded-xl transition-all h-8 w-8",
+            sidebarOpen ? "" : "mt-1"
+          )}
+          aria-label={sidebarOpen ? "Collapse sidebar" : "Expand sidebar"}
+        >
+          <motion.div
+            animate={{ rotate: sidebarOpen ? 0 : 180 }}
+            transition={{ duration: 0.3, ease: "easeInOut" }}
           >
-            <motion.div
-              animate={{ rotate: sidebarOpen ? 0 : 180 }}
-              transition={{ duration: 0.3, ease: "easeInOut" }}
-            >
-              {sidebarOpen ? <PanelLeftClose className="h-4 w-4" /> : <PanelLeft className="h-4 w-4" />}
-            </motion.div>
-          </Button>
-        )}
+            {sidebarOpen ? <PanelLeftClose className="h-4 w-4" /> : <PanelLeft className="h-4 w-4" />}
+          </motion.div>
+        </Button>
       </div>
 
       {/* Search bar (expanded only) */}
