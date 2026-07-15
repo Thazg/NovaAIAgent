@@ -127,15 +127,6 @@ export const Layout = () => {
 
           <div className="flex items-center gap-2.5 flex-1 justify-end">
             <SettingsDrawer />
-            <button
-              type="button"
-              onClick={() => useChatStore.getState().logout()}
-              className="flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors"
-              title="Sign out"
-            >
-              <LogOut className="h-3.5 w-3.5" />
-              <span className="hidden sm:inline">Sign out</span>
-            </button>
             <div className={cn(
               "w-8 h-8 rounded-full overflow-hidden border-2 shrink-0 transition-all",
               avatar ? "border-primary/40 shadow-sm shadow-primary/20" : "border-border/50 bg-muted/50"

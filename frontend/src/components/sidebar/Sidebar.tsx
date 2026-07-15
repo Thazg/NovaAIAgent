@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useEffect } from 'react';
-import { MessageSquare, PanelLeftClose, PanelLeft, MoreHorizontal, Trash2, Edit2, Search, UserCircle, Sparkles, Pin, Copy, Download, FolderOpen, Settings, Sun, Moon } from 'lucide-react';
+import { MessageSquare, PanelLeftClose, PanelLeft, MoreHorizontal, Trash2, Edit2, Search, UserCircle, Sparkles, Pin, Copy, Download, FolderOpen, Settings, Sun, Moon, LogOut } from 'lucide-react';
 import { toast } from 'sonner';
 import { useChatStore } from '../../store/useChatStore';
 import { Button } from '../ui/button';
@@ -536,6 +536,11 @@ export const Sidebar = ({ forceShow }: { forceShow?: boolean }) => {
               <DropdownMenuItem className="rounded-lg gap-3 py-2.5 cursor-pointer" onClick={() => setAboutOpen(true)}>
                 <Sparkles className="h-4 w-4" />
                 <span>About Nova</span>
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem className="rounded-lg gap-3 py-2.5 cursor-pointer text-muted-foreground hover:text-destructive focus:text-destructive" onClick={() => useChatStore.getState().logout()}>
+                <LogOut className="h-4 w-4" />
+                <span>Sign out</span>
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
