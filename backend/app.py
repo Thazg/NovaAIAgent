@@ -16,7 +16,7 @@ class AuthMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request: Request, call_next):
         request.state.user_id = None
         path = request.url.path
-        if path.startswith(("/health", "/auth")):
+        if path.startswith("/health") or path in ("/auth/register", "/auth/login"):
             return await call_next(request)
 
         auth_header = request.headers.get("Authorization", "")
