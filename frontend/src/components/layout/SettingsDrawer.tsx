@@ -75,7 +75,7 @@ export const SettingsDrawer = () => {
           <SheetTitle className="text-lg md:text-xl font-medium tracking-tight">Settings</SheetTitle>
         </SheetHeader>
 
-        <div className="flex h-[calc(100vh-73px)] md:h-[calc(100vh-80px)] overflow-hidden">
+        <div className="flex h-[calc(100dvh-57px)] md:h-[calc(100dvh-71px)] overflow-hidden">
           {/* Sidebar Navigation */}
           <div className="w-52 border-r border-border/50 p-4 hidden sm:block shrink-0">
             <nav className="space-y-1">
@@ -129,7 +129,7 @@ export const SettingsDrawer = () => {
                 })}
               </div>
             </div>
-            <ScrollArea className="flex-1 min-w-0 px-4 md:px-6 py-3 md:py-6 pb-28 md:pb-24">
+            <ScrollArea className="flex-1 min-w-0 px-4 md:px-6 py-3 md:py-6 pb-8 md:pb-12">
             <div className="space-y-6 md:space-y-8 w-full">
               
               {/* General */}
