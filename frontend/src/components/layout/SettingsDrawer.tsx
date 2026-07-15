@@ -70,7 +70,7 @@ export const SettingsDrawer = () => {
           <SettingsIcon className="h-5 w-5 transition-transform group-hover:rotate-45 duration-300" />
         </Button>
       </SheetTrigger>
-      <SheetContent hideClose className="w-full sm:max-w-2xl p-0 border-l border-border/50 bg-background/95 backdrop-blur-xl">
+      <SheetContent className="w-full sm:max-w-2xl p-0 border-l border-border/50 bg-background/95 backdrop-blur-xl">
         <SheetHeader className="px-4 md:px-6 pt-4 md:pt-6 pb-3 md:pb-4 border-b border-border/50 text-left">
           <SheetTitle className="text-lg md:text-xl font-medium tracking-tight">Settings</SheetTitle>
         </SheetHeader>
