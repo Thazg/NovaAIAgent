@@ -1,5 +1,59 @@
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
 
+function getToken(): string | null {
+  try {
+    const raw = localStorage.getItem('rag-chat-storage');
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      return parsed?.state?.token || null;
+    }
+  } catch {}
+  return null;
+}
+
+function authHeaders(): Record<string, string> {
+  const token = getToken();
+  const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+  if (token) {
+    headers['Authorization'] = `Bearer ${token}`;
+  }
+  return headers;
+}
+
+export interface AuthResponse {
+  token: string;
+  user_id: string;
+  username: string;
+}
+
+export const auth = {
+  async register(username: string, password: string): Promise<AuthResponse> {
+    const res = await fetch(`${API_BASE_URL}/auth/register`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username, password }),
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({ detail: res.statusText }));
+      throw new Error(err.detail || 'Registration failed');
+    }
+    return res.json();
+  },
+
+  async login(username: string, password: string): Promise<AuthResponse> {
+    const res = await fetch(`${API_BASE_URL}/auth/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username, password }),
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({ detail: res.statusText }));
+      throw new Error(err.detail || 'Login failed');
+    }
+    return res.json();
+  },
+};
+
 export interface ChatRequest {
   session_id: string;
   question: string;
@@ -29,9 +83,7 @@ export const api = {
   async sendMessage(sessionId: string, question: string, abortSignal?: AbortSignal): Promise<ChatResponse> {
     const response = await fetch(`${API_BASE_URL}/chat`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: authHeaders(),
       body: JSON.stringify({ session_id: sessionId, question }),
       signal: abortSignal,
     });
@@ -57,9 +109,7 @@ export const api = {
     if (language && language !== 'auto') body.language = language;
     const response = await fetch(`${API_BASE_URL}/chat/stream`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: authHeaders(),
       body: JSON.stringify(body),
       signal: abortSignal,
     });
@@ -121,7 +171,7 @@ export const api = {
 
   // Documents API
   async getDocuments(): Promise<Document[]> {
-    const response = await fetch(`${API_BASE_URL}/documents`);
+    const response = await fetch(`${API_BASE_URL}/documents`, { headers: authHeaders() });
     if (!response.ok) {
       throw new Error(`API error: ${response.statusText}`);
     }
@@ -131,9 +181,12 @@ export const api = {
   async uploadDocument(file: File): Promise<{ status: string; filename: string; indexed?: boolean; chunks?: number; message?: string }> {
     const formData = new FormData();
     formData.append('file', file);
-
+    const token = getToken();
+    const headers: Record<string, string> = {};
+    if (token) headers['Authorization'] = `Bearer ${token}`;
     const response = await fetch(`${API_BASE_URL}/documents/upload`, {
       method: 'POST',
+      headers,
       body: formData,
     });
 
@@ -147,6 +200,7 @@ export const api = {
   async deleteDocument(id: string): Promise<{ status: string }> {
     const response = await fetch(`${API_BASE_URL}/documents/${id}`, {
       method: 'DELETE',
+      headers: authHeaders(),
     });
 
     if (!response.ok) {
@@ -159,6 +213,7 @@ export const api = {
   async clearAllDocuments(): Promise<{ status: string; deleted: number }> {
     const response = await fetch(`${API_BASE_URL}/documents/clear-all`, {
       method: 'DELETE',
+      headers: authHeaders(),
     });
 
     if (!response.ok) {
@@ -171,7 +226,7 @@ export const api = {
   async summarizeDocument(filename: string): Promise<{ summary: string; chunks: number; filename: string }> {
     const response = await fetch(`${API_BASE_URL}/documents/summarize`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: authHeaders(),
       body: JSON.stringify({ filename }),
     });
     if (!response.ok) {
@@ -183,7 +238,7 @@ export const api = {
   async searchDownload(query: string, maxResults: number = 3): Promise<{ status: string; downloaded: any[]; message: string }> {
     const response = await fetch(`${API_BASE_URL}/documents/search-download`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: authHeaders(),
       body: JSON.stringify({ query, max_results: maxResults }),
     });
     if (!response.ok) {
@@ -195,6 +250,7 @@ export const api = {
   async reindexDocuments(): Promise<{ status: string; message: string }> {
     const response = await fetch(`${API_BASE_URL}/documents/reindex`, {
       method: 'POST',
+      headers: authHeaders(),
     });
 
     if (!response.ok) {
@@ -206,7 +262,7 @@ export const api = {
 
   // Conversations API
   async getConversations(): Promise<Conversation[]> {
-    const response = await fetch(`${API_BASE_URL}/conversation`);
+    const response = await fetch(`${API_BASE_URL}/conversation`, { headers: authHeaders() });
     if (!response.ok) {
       throw new Error(`API error: ${response.statusText}`);
     }
@@ -216,6 +272,7 @@ export const api = {
   async createConversation(): Promise<Conversation> {
     const response = await fetch(`${API_BASE_URL}/conversation/new`, {
       method: 'POST',
+      headers: authHeaders(),
     });
 
     if (!response.ok) {
@@ -228,6 +285,7 @@ export const api = {
   async deleteConversation(id: string): Promise<{ status: string }> {
     const response = await fetch(`${API_BASE_URL}/conversation/${id}`, {
       method: 'DELETE',
+      headers: authHeaders(),
     });
 
     if (!response.ok) {
@@ -240,9 +298,7 @@ export const api = {
   async updateConversation(id: string, title: string): Promise<Conversation> {
     const response = await fetch(`${API_BASE_URL}/conversation/${id}`, {
       method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: authHeaders(),
       body: JSON.stringify({ title }),
     });
 
@@ -255,9 +311,22 @@ export const api = {
 
   // Health check
   async healthCheck(): Promise<{ status: string }> {
-    const response = await fetch(`${API_BASE_URL}/health`);
+    const response = await fetch(`${API_BASE_URL}/health`, { headers: authHeaders() });
     if (!response.ok) {
       throw new Error(`API error: ${response.statusText}`);
+    }
+    return response.json();
+  },
+
+  // Account
+  async deleteAccount(): Promise<{ status: string; message: string }> {
+    const response = await fetch(`${API_BASE_URL}/auth/account`, {
+      method: 'DELETE',
+      headers: authHeaders(),
+    });
+    if (!response.ok) {
+      const err = await response.json().catch(() => ({ detail: response.statusText }));
+      throw new Error(err.detail || 'Failed to delete account');
     }
     return response.json();
   },

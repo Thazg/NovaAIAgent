@@ -2,8 +2,14 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { v4 as uuidv4 } from 'uuid';
 import type { Conversation, Message } from '../types';
+import { auth } from '../services/api';
 
 interface ChatState {
+  // Auth
+  token: string | null;
+  userId: string | null;
+  username: string | null;
+
   conversations: Conversation[];
   currentConversationId: string | null;
   sidebarOpen: boolean;
@@ -22,6 +28,9 @@ interface ChatState {
   sidebarActiveTab: 'conversations' | 'documents';
   
   // Actions
+  login: (username: string, password: string) => Promise<void>;
+  register: (username: string, password: string) => Promise<void>;
+  logout: () => void;
   setTheme: (theme: 'light' | 'dark' | 'system') => void;
   setSettingsOpen: (open: boolean) => void;
   setAboutOpen: (open: boolean) => void;
@@ -58,6 +67,9 @@ interface ChatState {
 export const useChatStore = create<ChatState>()(
   persist(
     (set: (partial: Partial<ChatState> | ((state: ChatState) => Partial<ChatState>)) => void) => ({
+      token: null,
+      userId: null,
+      username: null,
       conversations: [],
       currentConversationId: null,
       sidebarOpen: true,
@@ -74,6 +86,16 @@ export const useChatStore = create<ChatState>()(
       developerMode: false,
       language: 'auto',
       sidebarActiveTab: 'conversations',
+
+      login: async (username: string, password: string) => {
+        const res = await auth.login(username, password);
+        set({ token: res.token, userId: res.user_id, username, displayName: username });
+      },
+      register: async (username: string, password: string) => {
+        const res = await auth.register(username, password);
+        set({ token: res.token, userId: res.user_id, username, displayName: username });
+      },
+      logout: () => set({ token: null, userId: null, username: null, conversations: [], currentConversationId: null }),
 
       setLanguage: (language: 'auto' | 'english' | 'vietnamese') => set({ language }),
       setSidebarActiveTab: (sidebarActiveTab: 'conversations' | 'documents') => set({ sidebarActiveTab }),
@@ -264,6 +286,9 @@ export const useChatStore = create<ChatState>()(
     {
       name: 'rag-chat-storage',
       partialize: (state: ChatState) => ({
+        token: state.token,
+        userId: state.userId,
+        username: state.username,
         conversations: state.conversations,
         theme: state.theme,
         sidebarOpen: state.sidebarOpen,

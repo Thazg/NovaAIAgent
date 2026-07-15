@@ -1,12 +1,12 @@
 import { useRef, useState, useEffect } from 'react';
-import { Settings as SettingsIcon, Monitor, User, MessageSquare, Info, Upload, Keyboard, Globe, Shield, Trash2, Heart, Code, HardDrive, Cpu, Database, FileText, Loader2, ExternalLink } from 'lucide-react';
+import { Settings as SettingsIcon, Monitor, User, MessageSquare, Info, Upload, Keyboard, Globe, Shield, Trash2, Heart, Code, HardDrive, Cpu, Database, FileText, Loader2, ExternalLink, AlertTriangle } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from '../ui/button';
 import { useChatStore } from '../../store/useChatStore';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '../ui/sheet';
 import { ScrollArea } from '../ui/scroll-area';
 import { Input } from '../ui/input';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '../../lib/utils';
 import { api, type Document } from '../../services/api';
 
@@ -18,6 +18,8 @@ export const SettingsDrawer = () => {
   const [loadingDocs, setLoadingDocs] = useState(false);
   const [summarizingFile, setSummarizingFile] = useState<string | null>(null);
   const [summaryResult, setSummaryResult] = useState<string | null>(null);
+  const [confirmDelete, setConfirmDelete] = useState(false);
+  const [deletingAccount, setDeletingAccount] = useState(false);
 
   const devSections = developerMode
     ? [
@@ -227,6 +229,17 @@ export const SettingsDrawer = () => {
                         />
                       </div>
                     </div>
+                    {avatar && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="w-full rounded-xl text-xs gap-1.5 text-destructive"
+                        onClick={() => { setAvatar(null); toast.success('Avatar removed'); }}
+                      >
+                        <Trash2 className="h-3.5 w-3.5" />
+                        Remove Avatar
+                      </Button>
+                    )}
                   </div>
                 </motion.div>
               )}
@@ -389,6 +402,64 @@ export const SettingsDrawer = () => {
                         <Trash2 className="h-4 w-4 text-destructive" />
                         <span>Clear All Conversations</span>
                       </Button>
+                    </div>
+                    <div className="pt-2 border-t border-border/30 space-y-2">
+                      <AnimatePresence>
+                        {!confirmDelete ? (
+                          <motion.div key="btn" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+                            <Button
+                              variant="outline"
+                              className="w-full rounded-xl justify-start text-sm h-9 gap-2 border-destructive/30 hover:border-destructive/60 text-destructive"
+                              onClick={() => setConfirmDelete(true)}
+                            >
+                              <AlertTriangle className="h-4 w-4" />
+                              <span>Delete Account</span>
+                            </Button>
+                          </motion.div>
+                        ) : (
+                          <motion.div
+                            key="confirm"
+                            initial={{ opacity: 0, y: -5 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: -5 }}
+                            className="space-y-2 p-3 rounded-xl bg-destructive/10 border border-destructive/20"
+                          >
+                            <p className="text-xs font-medium text-destructive">This will permanently delete your account and all data.</p>
+                            <div className="flex gap-2">
+                              <Button
+                                size="sm"
+                                variant="destructive"
+                                className="flex-1 h-8 text-xs"
+                                disabled={deletingAccount}
+                                onClick={async () => {
+                                  setDeletingAccount(true);
+                                  try {
+                                    await api.deleteAccount();
+                                    toast.success('Account deleted');
+                                    useChatStore.getState().logout();
+                                  } catch (err: any) {
+                                    toast.error(err.message || 'Failed to delete account');
+                                  } finally {
+                                    setDeletingAccount(false);
+                                    setConfirmDelete(false);
+                                  }
+                                }}
+                              >
+                                {deletingAccount ? <Loader2 className="h-3 w-3 animate-spin" /> : null}
+                                {deletingAccount ? 'Deleting...' : 'Confirm Delete'}
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                className="flex-1 h-8 text-xs"
+                                onClick={() => setConfirmDelete(false)}
+                              >
+                                Cancel
+                              </Button>
+                            </div>
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
                     </div>
                   </div>
                 </motion.div>

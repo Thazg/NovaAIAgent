@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { Menu, Sparkles, User } from 'lucide-react';
+import { LogOut, Menu, Sparkles, User } from 'lucide-react';
 import { Sidebar } from '../sidebar/Sidebar';
 import { ChatArea } from '../chat/ChatArea';
 import { Sheet, SheetContent, SheetTrigger } from '../ui/sheet';
@@ -66,6 +66,17 @@ export const Layout = () => {
           {/* Right: Stats + Settings + Avatar */}
           <div className="flex items-center gap-2.5 flex-1 justify-end">
             <SettingsDrawer />
+
+            {/* Logout */}
+            <button
+              type="button"
+              onClick={() => useChatStore.getState().logout()}
+              className="flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors"
+              title="Sign out"
+            >
+              <LogOut className="h-3.5 w-3.5" />
+              <span className="hidden sm:inline">Sign out</span>
+            </button>
 
             {/* User avatar */}
             <div className={cn(

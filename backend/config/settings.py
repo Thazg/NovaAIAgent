@@ -38,6 +38,9 @@ class Settings:
         str(BACKEND_DIR / "Dataset" / "uploads"),
     )
 
+    # Auth
+    JWT_SECRET: str = os.getenv("JWT_SECRET", "nova-ai-default-secret")
+
     # Backblaze B2 (S3-compatible storage)
     B2_KEY_ID: str = os.getenv("B2_KEY_ID", "")
     B2_APP_KEY: str = os.getenv("B2_APP_KEY", "")
