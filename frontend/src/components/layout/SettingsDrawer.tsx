@@ -1,4 +1,4 @@
-import { useRef, useState, useEffect } from 'react';
+import { useRef, useState, useEffect, useMemo } from 'react';
 import { Settings as SettingsIcon, Monitor, User, MessageSquare, Info, Upload, Keyboard, Globe, Shield, Trash2, Heart, Code, HardDrive, Cpu, Database, FileText, Loader2, ExternalLink, AlertTriangle } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from '../ui/button';
@@ -20,6 +20,15 @@ export const SettingsDrawer = () => {
   const [summaryResult, setSummaryResult] = useState<string | null>(null);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [deletingAccount, setDeletingAccount] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const mq = window.matchMedia('(max-width: 639px)');
+    setIsMobile(mq.matches);
+    const handler = (e: MediaQueryListEvent) => setIsMobile(e.matches);
+    mq.addEventListener('change', handler);
+    return () => mq.removeEventListener('change', handler);
+  }, []);
 
   const devSections = developerMode
     ? [
@@ -28,19 +37,22 @@ export const SettingsDrawer = () => {
       ]
     : [];
 
-  const sections = [
-    { id: 'general', icon: Globe, label: 'General' },
-    { id: 'appearance', icon: Monitor, label: 'Appearance' },
-    { id: 'profile', icon: User, label: 'Profile' },
-    { id: 'chat', icon: MessageSquare, label: 'Chat' },
-    { id: 'personalization', icon: Heart, label: 'Personalization' },
-    { id: 'privacy', icon: Shield, label: 'Privacy & Data' },
-    { id: 'shortcuts', icon: Keyboard, label: 'Shortcuts' },
-    { id: 'storage', icon: Database, label: 'Storage' },
-    ...devSections,
-    { id: 'developer', icon: Code, label: 'Developer' },
-    { id: 'about', icon: Info, label: 'About' },
-  ];
+  const sections = useMemo(() => {
+    const all = [
+      { id: 'general', icon: Globe, label: 'General' },
+      { id: 'appearance', icon: Monitor, label: 'Appearance' },
+      { id: 'profile', icon: User, label: 'Profile' },
+      { id: 'chat', icon: MessageSquare, label: 'Chat' },
+      { id: 'personalization', icon: Heart, label: 'Personalization' },
+      { id: 'privacy', icon: Shield, label: 'Privacy & Data' },
+      { id: 'shortcuts', icon: Keyboard, label: 'Shortcuts' },
+      { id: 'storage', icon: Database, label: 'Storage' },
+      ...devSections,
+      { id: 'developer', icon: Code, label: 'Developer' },
+      { id: 'about', icon: Info, label: 'About' },
+    ];
+    return isMobile ? all.filter(s => s.id !== 'shortcuts') : all;
+  }, [isMobile, developerMode]);
 
   useEffect(() => {
     if (settingsOpen && activeSection === 'storage') {

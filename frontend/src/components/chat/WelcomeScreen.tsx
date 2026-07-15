@@ -271,7 +271,7 @@ export const WelcomeScreen = ({ onSelectSuggestion }: { onSelectSuggestion: (tex
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 1.0 }}
-          className="mt-8 flex items-center gap-2 text-[12px] text-muted-foreground/45 relative z-10"
+          className="mt-8 hidden md:flex items-center gap-2 text-[12px] text-muted-foreground/45 relative z-10"
         >
           <kbd className="px-1.5 py-0.5 rounded bg-muted/60 border border-border/40 font-mono text-[10px]">↵ Enter</kbd>
           <span>to send</span>
