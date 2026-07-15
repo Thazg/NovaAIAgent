@@ -105,7 +105,7 @@ const ConversationItem = ({
                 variant="ghost"
                 size="icon"
                 className="h-7 w-7 text-muted-foreground/50 hover:text-foreground rounded-lg opacity-0 group-hover:opacity-100 transition-all shrink-0"
-                onClick={(e: React.MouseEvent) => e.stopPropagation()}
+                  onClick={(e: React.MouseEvent) => e.stopPropagation()}
               >
                 <MoreHorizontal className="h-3.5 w-3.5" />
               </Button>
@@ -150,11 +150,11 @@ const GroupLabel = ({ label }: { label: string }) => (
   </motion.div>
 );
 
-export const Sidebar = () => {
+export const Sidebar = ({ forceShow }: { forceShow?: boolean }) => {
   const {
     conversations,
     currentConversationId,
-    sidebarOpen,
+    sidebarOpen: storeSidebarOpen,
     toggleSidebar,
     createConversation,
     setCurrentConversation,
@@ -170,6 +170,7 @@ export const Sidebar = () => {
     sidebarActiveTab,
     setSidebarActiveTab,
   } = useChatStore();
+  const sidebarOpen = forceShow ? true : storeSidebarOpen;
 
   const [searchQuery, setSearchQuery] = useState('');
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -294,9 +295,12 @@ export const Sidebar = () => {
   return (
     <motion.div 
       initial={false}
-      animate={{ width: sidebarOpen ? 340 : 76 }}
+      animate={{ width: forceShow ? "100%" : (sidebarOpen ? 340 : 76) }}
       transition={{ type: "spring", stiffness: 320, damping: 32 }}
-      className="h-full flex flex-col z-40 hidden md:flex shrink-0 overflow-hidden border-r border-border/40"
+      className={cn(
+        "h-full flex flex-col z-40 shrink-0 overflow-hidden border-r border-border/40",
+        forceShow ? "flex" : "hidden md:flex"
+      )}
       style={{
         background: 'linear-gradient(180deg, hsl(var(--background)) 0%, hsl(var(--card)) 100%)',
       }}
@@ -405,7 +409,7 @@ export const Sidebar = () => {
 
           {/* Scrollable content — this is the key fix: overflow-y-auto with min-h-0 on the flex parent */}
           <div className="flex-1 overflow-y-auto min-h-0 px-3 pb-2">
-            <AnimatePresence mode="wait">
+            <AnimatePresence mode="popLayout">
               {activeTab === 'documents' ? (
                 <motion.div
                   key="documents"

@@ -116,13 +116,13 @@ export const ChatInput = ({ onSend, onStop }: ChatInputProps) => {
   const showCharCount = charCount > 200;
 
   return (
-    <div className="relative w-full max-w-3xl mx-auto flex flex-col gap-2">
+    <div className="relative w-full max-w-3xl mx-auto flex flex-col gap-1.5 md:gap-2">
       <motion.div
         initial={{ y: 16, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ type: "spring", stiffness: 320, damping: 28 }}
         className={cn(
-          "relative flex flex-col w-full rounded-2xl border bg-card/80 backdrop-blur-2xl transition-all duration-300",
+          "relative flex flex-col w-full rounded-xl md:rounded-2xl border bg-card/80 backdrop-blur-2xl transition-all duration-300",
           isBusy
             ? "border-primary/30 shadow-lg shadow-primary/10"
             : "border-border/50 shadow-md hover:border-border/70 focus-within:border-primary/40 focus-within:shadow-lg focus-within:shadow-primary/10"
@@ -141,7 +141,7 @@ export const ChatInput = ({ onSend, onStop }: ChatInputProps) => {
         )}
 
         {/* Input row */}
-        <div className="flex items-end gap-2 px-3 py-2.5">
+        <div className="flex items-end gap-1.5 md:gap-2 px-2 md:px-3 py-2 md:py-2.5">
           {/* Attach button */}
           <input
             type="file"
@@ -154,7 +154,7 @@ export const ChatInput = ({ onSend, onStop }: ChatInputProps) => {
             type="button"
             variant="ghost"
             size="icon"
-            className="h-8 w-8 text-muted-foreground hover:text-foreground hover:bg-muted/60 rounded-xl transition-colors shrink-0 mb-0.5"
+            className="h-9 w-9 md:h-8 md:w-8 text-muted-foreground hover:text-foreground hover:bg-muted/60 rounded-xl transition-colors shrink-0 mb-0.5"
             disabled={isBusy}
             onClick={() => fileInputRef.current?.click()}
             aria-label="Attach file"
@@ -169,14 +169,14 @@ export const ChatInput = ({ onSend, onStop }: ChatInputProps) => {
             onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setInput(e.target.value)}
             onKeyDown={handleKeyDown}
             placeholder="Ask Nova anything..."
-            className="min-h-[36px] max-h-[200px] w-full resize-none border-0 bg-transparent py-1.5 px-0 focus-visible:ring-0 shadow-none text-[14.5px] placeholder:text-muted-foreground/60 font-normal leading-relaxed"
+            className="min-h-[40px] md:min-h-[36px] max-h-[200px] w-full resize-none border-0 bg-transparent py-2 md:py-1.5 px-0 focus-visible:ring-0 shadow-none text-[15px] md:text-[14.5px] placeholder:text-muted-foreground/60 font-normal leading-relaxed"
             disabled={isBusy}
             rows={1}
             aria-label="Message input"
           />
 
           {/* Right controls */}
-          <div className="flex items-center gap-1.5 shrink-0 mb-0.5">
+          <div className="flex items-center gap-1 shrink-0 mb-0.5">
             {/* Mic button (when idle & empty) */}
             <AnimatePresence>
               {!input.trim() && !isBusy && (
@@ -192,7 +192,7 @@ export const ChatInput = ({ onSend, onStop }: ChatInputProps) => {
                     size="icon"
                     onClick={toggleRecording}
                     className={cn(
-                      "h-8 w-8 rounded-xl transition-colors hidden sm:flex",
+                      "h-9 w-9 md:h-8 md:w-8 rounded-xl transition-colors flex",
                       isRecording
                         ? "text-red-500 bg-red-500/10 hover:bg-red-500/20"
                         : "text-muted-foreground hover:text-foreground hover:bg-muted/60"
@@ -219,10 +219,10 @@ export const ChatInput = ({ onSend, onStop }: ChatInputProps) => {
                     type="button"
                     onClick={onStop}
                     size="icon"
-                    className="h-8 w-8 rounded-xl bg-destructive/10 hover:bg-destructive/20 text-destructive transition-all border border-destructive/20 hover:scale-105"
+                    className="h-9 w-9 md:h-8 md:w-8 rounded-xl bg-destructive/10 hover:bg-destructive/20 text-destructive transition-all border border-destructive/20 hover:scale-105"
                     aria-label="Stop generation"
                   >
-                    <Square className="h-3.5 w-3.5 fill-current" />
+                    <Square className="h-4 w-4 md:h-3.5 md:w-3.5 fill-current" />
                   </Button>
                 </motion.div>
               ) : (
@@ -239,14 +239,14 @@ export const ChatInput = ({ onSend, onStop }: ChatInputProps) => {
                     disabled={!input.trim()}
                     size="icon"
                     className={cn(
-                      "h-8 w-8 rounded-xl transition-all shadow-sm",
+                      "h-9 w-9 md:h-8 md:w-8 rounded-xl transition-all shadow-sm",
                       input.trim()
                         ? "bg-primary text-primary-foreground hover:bg-primary/90 hover:scale-105 hover:shadow-md hover:shadow-primary/25"
                         : "bg-muted/60 text-muted-foreground/50 cursor-not-allowed"
                     )}
                     aria-label="Send message"
                   >
-                    <Send className="h-3.5 w-3.5" />
+                    <Send className="h-4 w-4 md:h-3.5 md:w-3.5" />
                   </Button>
                 </motion.div>
               )}

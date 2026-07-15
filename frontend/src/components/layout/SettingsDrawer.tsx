@@ -70,14 +70,14 @@ export const SettingsDrawer = () => {
           <SettingsIcon className="h-5 w-5 transition-transform group-hover:rotate-45 duration-300" />
         </Button>
       </SheetTrigger>
-      <SheetContent className="w-full sm:max-w-2xl p-0 border-l border-border/50 bg-background/95 backdrop-blur-xl">
-        <SheetHeader className="p-6 border-b border-border/50 text-left">
-          <SheetTitle className="text-xl font-medium tracking-tight">Settings</SheetTitle>
+      <SheetContent hideClose className="w-full sm:max-w-2xl p-0 border-l border-border/50 bg-background/95 backdrop-blur-xl">
+        <SheetHeader className="px-4 md:px-6 pt-4 md:pt-6 pb-3 md:pb-4 border-b border-border/50 text-left">
+          <SheetTitle className="text-lg md:text-xl font-medium tracking-tight">Settings</SheetTitle>
         </SheetHeader>
-        
-        <div className="flex h-[calc(100vh-80px)]">
+
+        <div className="flex h-[calc(100vh-73px)] md:h-[calc(100vh-80px)] overflow-hidden">
           {/* Sidebar Navigation */}
-          <div className="w-52 border-r border-border/50 p-4 hidden sm:block">
+          <div className="w-52 border-r border-border/50 p-4 hidden sm:block shrink-0">
             <nav className="space-y-1">
               {sections.map((section) => {
                 const Icon = section.icon;
@@ -101,8 +101,36 @@ export const SettingsDrawer = () => {
           </div>
 
           {/* Content Area */}
-          <ScrollArea className="flex-1 px-6 py-6 pb-24">
-            <div className="space-y-8 max-w-2xl">
+          <div className="flex-1 flex flex-col min-w-0 min-h-0">
+            {/* Mobile section tabs */}
+            <div className="sm:hidden px-4 pt-2.5 pb-1 overflow-x-auto scrollbar-none shrink-0">
+              <div className="flex gap-1 min-w-0 border-b border-border/20 pb-2">
+                {sections.map((section) => {
+                  const Icon = section.icon;
+                  const isActive = activeSection === section.id;
+                  return (
+                    <button
+                      key={section.id}
+                      onClick={() => setActiveSection(section.id)}
+                      className={cn(
+                        "flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all whitespace-nowrap shrink-0 relative",
+                        isActive
+                          ? "text-primary"
+                          : "text-muted-foreground/70 hover:text-foreground"
+                      )}
+                    >
+                      <Icon className="h-3.5 w-3.5" />
+                      {section.label}
+                      {isActive && (
+                        <span className="absolute bottom-[-9px] left-1/2 -translate-x-1/2 w-8 h-0.5 bg-primary rounded-full" />
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+            <ScrollArea className="flex-1 min-w-0 px-4 md:px-6 py-3 md:py-6 pb-28 md:pb-24">
+            <div className="space-y-6 md:space-y-8 w-full">
               
               {/* General */}
               {activeSection === 'general' && (
@@ -758,6 +786,7 @@ export const SettingsDrawer = () => {
               
             </div>
           </ScrollArea>
+          </div>
         </div>
       </SheetContent>
     </Sheet>

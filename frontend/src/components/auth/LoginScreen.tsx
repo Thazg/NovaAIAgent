@@ -343,10 +343,10 @@ export function LoginScreen() {
 
       <div className="relative z-10 flex min-h-screen items-center justify-center p-4">
         {/* Decorative corner lines */}
-        <div className={`absolute top-8 left-8 w-20 h-20 border-l-2 border-t-2 rounded-tl-xl ${isDark ? 'border-indigo-500/20' : 'border-indigo-300/30'}`} />
-        <div className={`absolute top-8 right-8 w-20 h-20 border-r-2 border-t-2 rounded-tr-xl ${isDark ? 'border-violet-500/20' : 'border-violet-300/30'}`} />
-        <div className={`absolute bottom-8 left-8 w-20 h-20 border-l-2 border-b-2 rounded-bl-xl ${isDark ? 'border-fuchsia-500/20' : 'border-fuchsia-300/30'}`} />
-        <div className={`absolute bottom-8 right-8 w-20 h-20 border-r-2 border-b-2 rounded-br-xl ${isDark ? 'border-cyan-500/20' : 'border-cyan-300/30'}`} />
+        <div className={`absolute top-4 md:top-8 left-4 md:left-8 w-14 md:w-20 h-14 md:h-20 border-l-2 border-t-2 rounded-tl-xl ${isDark ? 'border-indigo-500/20' : 'border-indigo-300/30'}`} />
+        <div className={`absolute top-4 md:top-8 right-4 md:right-8 w-14 md:w-20 h-14 md:h-20 border-r-2 border-t-2 rounded-tr-xl ${isDark ? 'border-violet-500/20' : 'border-violet-300/30'}`} />
+        <div className={`absolute bottom-4 md:bottom-8 left-4 md:left-8 w-14 md:w-20 h-14 md:h-20 border-l-2 border-b-2 rounded-bl-xl ${isDark ? 'border-fuchsia-500/20' : 'border-fuchsia-300/30'}`} />
+        <div className={`absolute bottom-4 md:bottom-8 right-4 md:right-8 w-14 md:w-20 h-14 md:h-20 border-r-2 border-b-2 rounded-br-xl ${isDark ? 'border-cyan-500/20' : 'border-cyan-300/30'}`} />
 
         <motion.div
           initial={{ opacity: 0, scale: 0.96, y: 30 }}
@@ -364,7 +364,7 @@ export function LoginScreen() {
           }}
         >
           {/* Card content */}
-          <div className={`rounded-2xl p-8 ${
+          <div className={`rounded-2xl p-6 md:p-8 ${
             isDark
               ? 'bg-slate-900/95 backdrop-blur-2xl'
               : 'bg-white/90 backdrop-blur-2xl'
@@ -383,13 +383,13 @@ export function LoginScreen() {
                 initial={{ scale: 0 }}
                 animate={{ scale: 1 }}
                 transition={{ delay: 0.2, type: 'spring', stiffness: 200 }}
-                className={`mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl ${
+                className={`mx-auto mb-3 md:mb-4 flex h-14 w-14 md:h-16 md:w-16 items-center justify-center rounded-2xl ${
                   isDark
                     ? 'bg-gradient-to-br from-indigo-500/20 to-violet-500/20 border border-indigo-500/30 shadow-lg shadow-indigo-500/10'
                     : 'bg-gradient-to-br from-indigo-100 to-violet-100 border border-indigo-200 shadow-lg shadow-indigo-200/30'
                 }`}
               >
-                <Sparkles className={`h-7 w-7 ${isDark ? 'text-indigo-400' : 'text-indigo-600'}`} />
+                <Sparkles className={`h-6 w-6 md:h-7 md:w-7 ${isDark ? 'text-indigo-400' : 'text-indigo-600'}`} />
               </motion.div>
               <AnimatedGradientText />
               <motion.p
@@ -408,7 +408,7 @@ export function LoginScreen() {
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.3, ease: 'easeOut' }}
               onSubmit={handleSubmit}
-              className="space-y-4"
+              className="space-y-3 md:space-y-4"
             >
               <InputField
                 label="Username"
@@ -476,7 +476,7 @@ export function LoginScreen() {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.35, duration: 0.5 }}
-              className="mt-6 text-center"
+              className="mt-4 md:mt-6 text-center"
             >
               {mode === 'login' ? (
                 <p className={`text-sm ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>

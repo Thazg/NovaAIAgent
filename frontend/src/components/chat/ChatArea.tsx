@@ -275,12 +275,12 @@ export const ChatArea = () => {
       <GlobalSearch isOpen={isSearchOpen} onClose={() => setIsSearchOpen(false)} />
       <div 
         ref={scrollRef}
-        className="flex-1 overflow-y-auto pt-8 scroll-smooth"
+        className="flex-1 overflow-y-auto pt-4 md:pt-8 scroll-smooth"
       >
         {messages.length === 0 ? (
           <WelcomeScreen onSelectSuggestion={handleSend} />
         ) : (
-          <div className="flex flex-col max-w-[950px] mx-auto w-full px-6 md:px-12 lg:px-16 pb-4">
+          <div className="flex flex-col max-w-[950px] mx-auto w-full px-4 md:px-10 lg:px-16 pb-4">
             {messages.map((message, index) => {
               const isLastMessage = index === messages.length - 1;
               const isStreaming = isLastMessage && message.role === 'assistant' && useChatStore.getState().isStreaming;
@@ -333,7 +333,7 @@ export const ChatArea = () => {
       </div>
 
       {/* Input Area (normal flow) */}
-      <div className="px-4 pb-6 pt-1 bg-background">
+      <div className="px-4 pb-[max(1.25rem,env(safe-area-inset-bottom,0.75rem))] md:pb-6 pt-1 bg-background">
         <div className="w-full max-w-[850px] mx-auto">
           <ChatInput onSend={handleSend} onStop={handleStop} />
         </div>

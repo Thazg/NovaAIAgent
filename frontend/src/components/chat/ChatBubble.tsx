@@ -220,9 +220,9 @@ export const ChatBubble = memo(({ message, isStreaming, onRegenerate }: ChatBubb
 
           {/* Knowledge panel - removed */}
 
-          {/* Action buttons (on hover) */}
+          {/* Action buttons (always visible on mobile, on hover on desktop) */}
           <div className={cn(
-            "flex items-center gap-0.5 mt-1.5 opacity-0 group-hover:opacity-100 transition-all duration-200",
+            "flex items-center gap-0.5 mt-1.5 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-all duration-200",
             isUser ? "flex-row-reverse" : "flex-row"
           )}>
             <span className="text-[10.5px] text-muted-foreground/65 px-1.5 font-medium tabular-nums">

@@ -88,7 +88,7 @@ export const WelcomeScreen = ({ onSelectSuggestion }: { onSelectSuggestion: (tex
   const hasDocs = docCount !== null && docCount > 0;
 
   return (
-    <div className="flex-1 flex flex-col items-center justify-center p-8 w-full max-w-5xl mx-auto h-full relative select-none">
+    <div className="flex-1 flex flex-col items-center justify-center p-4 md:p-8 w-full max-w-5xl mx-auto h-full relative select-none">
       
       {/* Background decorative blobs */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
@@ -101,7 +101,7 @@ export const WelcomeScreen = ({ onSelectSuggestion }: { onSelectSuggestion: (tex
         initial={{ opacity: 0, y: 32 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
-        className="flex flex-col items-center text-center space-y-7 mb-16 relative z-10"
+        className="flex flex-col items-center text-center space-y-5 md:space-y-7 mb-10 md:mb-16 relative z-10"
       >
         {/* Logo/icon */}
         <motion.div
@@ -143,7 +143,7 @@ export const WelcomeScreen = ({ onSelectSuggestion }: { onSelectSuggestion: (tex
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.3, duration: 0.5 }}
-            className="text-[3.5rem] md:text-[4rem] font-bold tracking-[-0.04em] leading-none"
+            className="text-[2.2rem] sm:text-[3rem] md:text-[4rem] font-bold tracking-[-0.04em] leading-none"
           >
             <span className="bg-clip-text text-transparent bg-gradient-to-br from-foreground via-foreground/95 to-foreground/70">
               Your Private
@@ -225,7 +225,7 @@ export const WelcomeScreen = ({ onSelectSuggestion }: { onSelectSuggestion: (tex
           variants={containerVariants}
           initial="hidden"
           animate="show"
-          className="grid grid-cols-1 sm:grid-cols-2 gap-3 w-full max-w-[780px] relative z-10"
+          className="grid grid-cols-1 sm:grid-cols-2 gap-2 md:gap-3 w-full max-w-[780px] relative z-10 px-2 md:px-0"
         >
           {SUGGESTIONS.map((suggestion, idx) => (
             <motion.button
