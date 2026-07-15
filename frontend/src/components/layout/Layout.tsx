@@ -3,7 +3,7 @@ import { LogOut, Menu, Sparkles, User, MessageSquare, FolderOpen, Plus } from 'l
 import { Sidebar } from '../sidebar/Sidebar';
 import { ChatArea } from '../chat/ChatArea';
 import { Sheet, SheetContent, SheetTrigger } from '../ui/sheet';
-import { Button } from '../ui/button';
+
 import { useChatStore } from '../../store/useChatStore';
 import { SettingsDrawer } from './SettingsDrawer';
 import { cn } from '../../lib/utils';
