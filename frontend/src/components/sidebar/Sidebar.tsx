@@ -328,23 +328,25 @@ export const Sidebar = ({ forceShow }: { forceShow?: boolean }) => {
           </TooltipProvider>
         </motion.div>
         
-        <Button 
-          variant="ghost" 
-          size="icon" 
-          onClick={handleToggleSidebar}
-          className={cn(
-            "shrink-0 text-muted-foreground/60 hover:text-foreground hover:bg-muted/50 rounded-xl transition-all h-8 w-8",
-            sidebarOpen ? "" : "mt-1"
-          )}
-          aria-label={sidebarOpen ? "Collapse sidebar" : "Expand sidebar"}
-        >
-          <motion.div
-            animate={{ rotate: sidebarOpen ? 0 : 180 }}
-            transition={{ duration: 0.3, ease: "easeInOut" }}
+        {!forceShow && (
+          <Button 
+            variant="ghost" 
+            size="icon" 
+            onClick={handleToggleSidebar}
+            className={cn(
+              "shrink-0 text-muted-foreground/60 hover:text-foreground hover:bg-muted/50 rounded-xl transition-all h-8 w-8",
+              sidebarOpen ? "" : "mt-1"
+            )}
+            aria-label={sidebarOpen ? "Collapse sidebar" : "Expand sidebar"}
           >
-            {sidebarOpen ? <PanelLeftClose className="h-4 w-4" /> : <PanelLeft className="h-4 w-4" />}
-          </motion.div>
-        </Button>
+            <motion.div
+              animate={{ rotate: sidebarOpen ? 0 : 180 }}
+              transition={{ duration: 0.3, ease: "easeInOut" }}
+            >
+              {sidebarOpen ? <PanelLeftClose className="h-4 w-4" /> : <PanelLeft className="h-4 w-4" />}
+            </motion.div>
+          </Button>
+        )}
       </div>
 
       {/* Search bar (expanded only) */}

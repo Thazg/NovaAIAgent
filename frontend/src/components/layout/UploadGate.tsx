@@ -121,15 +121,6 @@ export const UploadGate = ({ onContinue }: { onContinue: () => void }) => {
             </div>
           </motion.button>
 
-          <motion.p
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.65 }}
-            className="text-xs text-muted-foreground/50 mt-4"
-          >
-            Or say "search for &lt;topic&gt;" once you start chatting
-          </motion.p>
-
           {loading && (
             <motion.div
               initial={{ opacity: 0 }}
