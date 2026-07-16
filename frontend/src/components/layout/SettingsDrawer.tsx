@@ -1,5 +1,5 @@
 import { useRef, useState, useEffect, useMemo } from 'react';
-import { Settings as SettingsIcon, Monitor, User, MessageSquare, Info, Upload, Keyboard, Globe, Shield, Trash2, Heart, Code, HardDrive, Cpu, Database, FileText, Loader2, ExternalLink, AlertTriangle } from 'lucide-react';
+import { Settings as SettingsIcon, Monitor, User, Info, Upload, Keyboard, Globe, Shield, Trash2, Heart, Code, Cpu, Database, FileText, Loader2, ExternalLink, AlertTriangle } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from '../ui/button';
 import { useChatStore } from '../../store/useChatStore';
@@ -32,7 +32,6 @@ export const SettingsDrawer = () => {
 
   const devSections = developerMode
     ? [
-        { id: 'backend', icon: HardDrive, label: 'Backend' },
         { id: 'system', icon: Cpu, label: 'System' },
       ]
     : [];
@@ -42,7 +41,6 @@ export const SettingsDrawer = () => {
       { id: 'general', icon: Globe, label: 'General' },
       { id: 'appearance', icon: Monitor, label: 'Appearance' },
       { id: 'profile', icon: User, label: 'Profile' },
-      { id: 'chat', icon: MessageSquare, label: 'Chat' },
       { id: 'personalization', icon: Heart, label: 'Personalization' },
       { id: 'privacy', icon: Shield, label: 'Privacy & Data' },
       { id: 'shortcuts', icon: Keyboard, label: 'Shortcuts' },
@@ -156,17 +154,28 @@ export const SettingsDrawer = () => {
                     General
                   </div>
                   <div className="space-y-3 p-4 bg-muted/20 rounded-xl border border-border/50">
-                    <div className="flex items-center justify-between">
-                      <label className="text-sm font-medium text-foreground">Notifications</label>
-                      <input type="checkbox" className="accent-primary h-4 w-4 rounded-sm" defaultChecked />
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <label className="text-sm font-medium text-foreground">Sound Effects</label>
-                      <input type="checkbox" className="accent-primary h-4 w-4 rounded-sm" defaultChecked />
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <label className="text-sm font-medium text-foreground">Auto-save Conversations</label>
-                      <input type="checkbox" className="accent-primary h-4 w-4 rounded-sm" defaultChecked />
+                    <div className="space-y-2">
+                      <label className="text-xs font-medium text-muted-foreground">Response Language</label>
+                      <div className="grid grid-cols-3 gap-2">
+                        {[
+                          { id: 'auto', label: 'Auto' },
+                          { id: 'english', label: 'English' },
+                          { id: 'vietnamese', label: 'Vietnamese' },
+                        ].map((l) => (
+                          <button
+                            key={l.id}
+                            onClick={() => setLanguage(l.id as any)}
+                            className={`px-3 py-2 rounded-xl text-sm font-medium transition-all ${
+                              language === l.id
+                                ? 'bg-primary text-primary-foreground shadow-sm'
+                                : 'bg-background border border-border/40 text-muted-foreground hover:border-border/70'
+                            }`}
+                          >
+                            {l.label}
+                          </button>
+                        ))}
+                      </div>
+                      <p className="text-[10px] text-muted-foreground/50">Auto detects your question's language. Force English or Vietnamese to override.</p>
                     </div>
                   </div>
                 </motion.div>
@@ -197,33 +206,6 @@ export const SettingsDrawer = () => {
                         {t.charAt(0).toUpperCase() + t.slice(1)}
                       </button>
                     ))}
-                  </div>
-                  <div className="space-y-3 p-4 bg-muted/20 rounded-xl border border-border/50">
-                    <div className="flex items-center justify-between">
-                      <label className="text-sm font-medium text-foreground">Font Size</label>
-                      <select className="h-8 rounded-lg bg-background border border-border/50 px-2 text-sm">
-                        <option>Small</option>
-                        <option selected>Medium</option>
-                        <option>Large</option>
-                      </select>
-                    </div>
-                    <div className="pt-2 border-t border-border/30">
-                      <p className="text-[11px] font-medium text-muted-foreground/70 mb-2">Animations</p>
-                      <div className="space-y-2">
-                        <div className="flex items-center justify-between">
-                          <label className="text-sm font-medium text-foreground">Reduce Motion</label>
-                          <input type="checkbox" className="accent-primary h-4 w-4 rounded-sm" />
-                        </div>
-                        <div className="flex items-center justify-between">
-                          <label className="text-sm font-medium text-foreground">Message Animations</label>
-                          <input type="checkbox" className="accent-primary h-4 w-4 rounded-sm" defaultChecked />
-                        </div>
-                        <div className="flex items-center justify-between">
-                          <label className="text-sm font-medium text-foreground">Sidebar Animations</label>
-                          <input type="checkbox" className="accent-primary h-4 w-4 rounded-sm" defaultChecked />
-                        </div>
-                      </div>
-                    </div>
                   </div>
                 </motion.div>
               )}
@@ -284,60 +266,7 @@ export const SettingsDrawer = () => {
                 </motion.div>
               )}
 
-              {/* Chat */}
-              {activeSection === 'chat' && (
-                <motion.div
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className="space-y-4"
-                >
-                  <div className="flex items-center gap-2 text-sm font-semibold text-primary">
-                    <MessageSquare className="h-4 w-4" />
-                    Chat
-                  </div>
-                  <div className="space-y-3 p-4 bg-muted/20 rounded-xl border border-border/50">
-                    <div className="flex items-center justify-between">
-                      <label className="text-sm font-medium text-foreground">Streaming</label>
-                      <input type="checkbox" className="accent-primary h-4 w-4 rounded-sm" defaultChecked />
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <label className="text-sm font-medium text-foreground">Auto Scroll</label>
-                      <input type="checkbox" className="accent-primary h-4 w-4 rounded-sm" defaultChecked />
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <label className="text-sm font-medium text-foreground">Show Timestamps</label>
-                      <input type="checkbox" className="accent-primary h-4 w-4 rounded-sm" defaultChecked />
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <label className="text-sm font-medium text-foreground">Markdown Rendering</label>
-                      <input type="checkbox" className="accent-primary h-4 w-4 rounded-sm" defaultChecked />
-                    </div>
-                    <div className="pt-2 border-t border-border/30 space-y-2">
-                      <label className="text-xs font-medium text-muted-foreground">Response Language</label>
-                      <div className="grid grid-cols-3 gap-2">
-                        {[
-                          { id: 'auto', label: 'Auto' },
-                          { id: 'english', label: 'English' },
-                          { id: 'vietnamese', label: 'Vietnamese' },
-                        ].map((l) => (
-                          <button
-                            key={l.id}
-                            onClick={() => setLanguage(l.id as any)}
-                            className={`px-3 py-2 rounded-xl text-sm font-medium transition-all ${
-                              language === l.id
-                                ? 'bg-primary text-primary-foreground shadow-sm'
-                                : 'bg-background border border-border/40 text-muted-foreground hover:border-border/70'
-                            }`}
-                          >
-                            {l.label}
-                          </button>
-                        ))}
-                      </div>
-                      <p className="text-[10px] text-muted-foreground/50">Auto detects your question's language. Force English or Vietnamese to override.</p>
-                    </div>
-                  </div>
-                </motion.div>
-              )}
+
 
               {/* Personalization */}
               {activeSection === 'personalization' && (
@@ -420,29 +349,13 @@ export const SettingsDrawer = () => {
                     Privacy & Data
                   </div>
                   <div className="space-y-3 p-4 bg-muted/20 rounded-xl border border-border/50">
-                    <div className="space-y-3">
-                      <div className="flex items-center justify-between">
-                        <label className="text-sm font-medium text-foreground">Auto-save Conversations</label>
-                        <input type="checkbox" className="accent-primary h-4 w-4 rounded-sm" defaultChecked />
-                      </div>
-                      <div className="flex items-center justify-between">
-                        <label className="text-sm font-medium text-foreground">Local Processing Only</label>
-                        <input type="checkbox" className="accent-primary h-4 w-4 rounded-sm" defaultChecked disabled />
-                      </div>
-                      <div className="flex items-center justify-between">
-                        <label className="text-sm font-medium text-foreground">Anonymous Usage Data</label>
-                        <input type="checkbox" className="accent-primary h-4 w-4 rounded-sm" />
-                      </div>
-                    </div>
-                    <div className="pt-3 border-t border-border/30 space-y-2">
-                      <Button variant="outline" className="w-full rounded-xl justify-start text-sm h-9 gap-2" onClick={() => {
-                        useChatStore.getState().clearAllConversations();
-                        toast.success('All conversations cleared');
-                      }}>
-                        <Trash2 className="h-4 w-4 text-destructive" />
-                        <span>Clear All Conversations</span>
-                      </Button>
-                    </div>
+                    <Button variant="outline" className="w-full rounded-xl justify-start text-sm h-9 gap-2" onClick={() => {
+                      useChatStore.getState().clearAllConversations();
+                      toast.success('All conversations cleared');
+                    }}>
+                      <Trash2 className="h-4 w-4 text-destructive" />
+                      <span>Clear All Conversations</span>
+                    </Button>
                     <div className="pt-2 border-t border-border/30 space-y-2">
                       <AnimatePresence>
                         {!confirmDelete ? (
@@ -691,10 +604,6 @@ export const SettingsDrawer = () => {
                       <div className="pt-3 border-t border-border/30 space-y-2">
                         <p className="text-xs text-muted-foreground/70">Additional sections are now visible in the sidebar navigation.</p>
                         <div className="flex items-center gap-2 text-xs text-muted-foreground/60">
-                          <HardDrive className="h-3 w-3" />
-                          <span>Backend — API config, health</span>
-                        </div>
-                        <div className="flex items-center gap-2 text-xs text-muted-foreground/60">
                           <Cpu className="h-3 w-3" />
                           <span>System — Model info, diagnostics</span>
                         </div>
@@ -704,39 +613,7 @@ export const SettingsDrawer = () => {
                 </motion.div>
               )}
 
-              {/* Backend (developer only) */}
-              {activeSection === 'backend' && (
-                <motion.div
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className="space-y-4"
-                >
-                  <div className="flex items-center gap-2 text-sm font-semibold text-primary">
-                    <HardDrive className="h-4 w-4" />
-                    Backend
-                  </div>
-                  <div className="space-y-3 p-4 bg-muted/20 rounded-xl border border-border/50">
-                    <div className="space-y-1">
-                      <label className="text-xs font-medium text-muted-foreground">API URL</label>
-                      <Input className="h-9 rounded-lg" defaultValue="http://localhost:8000" />
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <label className="text-sm font-medium text-foreground">Health Check</label>
-                      <div className="flex items-center gap-2">
-                        <span className="w-2 h-2 rounded-full bg-emerald-500" />
-                        <span className="text-xs text-muted-foreground/70">Online</span>
-                      </div>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <label className="text-sm font-medium text-foreground">Streaming</label>
-                      <input type="checkbox" className="accent-primary h-4 w-4 rounded-sm" defaultChecked />
-                    </div>
-                    <div className="pt-2 border-t border-border/30">
-                      <p className="text-[10px] text-muted-foreground/50">Backend runs locally via FastAPI + Ollama.</p>
-                    </div>
-                  </div>
-                </motion.div>
-              )}
+
 
               {/* System (developer only) */}
               {activeSection === 'system' && (
@@ -765,7 +642,7 @@ export const SettingsDrawer = () => {
                     <div className="pt-2 border-t border-border/30 space-y-1">
                       <label className="text-xs font-medium text-muted-foreground">RAG Pipeline</label>
                       <div className="flex gap-1.5 flex-wrap">
-                        {['TF-IDF', 'FAISS', 'Context Builder', 'Prompt Assembly'].map((step) => (
+                        {['BM25', 'FAISS (Groq)', 'RRF Fusion', 'Context Builder', 'Prompt Assembly'].map((step) => (
                           <span key={step} className="px-2 py-0.5 rounded-md bg-primary/10 text-primary text-[10px] font-medium">{step}</span>
                         ))}
                       </div>

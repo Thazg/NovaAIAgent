@@ -23,7 +23,7 @@ def health_check():
             "llm_provider": "groq",
             "groq_api_key_set": api_key_set,
             "groq_model": settings.GROQ_MODEL,
-            "embedding_model": settings.EMBEDDING_MODEL,
+            "embedding_model": settings.GROQ_EMBEDDING_MODEL,
             "vector_store": "loaded",
         }
 
@@ -43,6 +43,6 @@ def health_check():
         "llm_provider": "ollama",
         "ollama": ollama_status,
         "model": settings.MODEL_NAME,
-        "embedding_model": settings.EMBEDDING_MODEL,
+        "embedding_model": settings.GROQ_EMBEDDING_MODEL,
         "vector_store": "loaded",
     }

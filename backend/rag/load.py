@@ -1,4 +1,4 @@
-﻿import json
+import json
 import os
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -19,7 +19,6 @@ except ImportError:
 from config.settings import settings
 
 BACKEND_DIR = Path(__file__).resolve().parents[1]
-DATASET_DIR = Path(os.getenv("RAG_DATASET_DIR", BACKEND_DIR / "Dataset")).resolve()
 UPLOADS_DIR = Path(settings.UPLOAD_FOLDER).resolve()
 LEGACY_UPLOADS_DIR = (BACKEND_DIR / "uploads").resolve()
 
@@ -116,7 +115,7 @@ def load_file(file_path: Path) -> List[Document]:
     return documents
 
 
-def iter_supported_files(input_dir=DATASET_DIR) -> List[Path]:
+def iter_supported_files(input_dir: Path) -> List[Path]:
     input_dir = Path(input_dir).resolve()
     if not input_dir.exists():
         return []
@@ -128,33 +127,14 @@ def iter_supported_files(input_dir=DATASET_DIR) -> List[Path]:
     )
 
 
-def load_documents(input_dir=DATASET_DIR) -> List[Document]:
+def load_documents() -> List[Document]:
     documents: List[Document] = []
     seen_paths: set[str] = set()
 
-    for file_path in iter_supported_files(input_dir):
-        resolved = str(file_path.resolve())
-        if resolved in seen_paths:
+    for base_dir in [UPLOADS_DIR, LEGACY_UPLOADS_DIR]:
+        if not base_dir.exists():
             continue
-        seen_paths.add(resolved)
-        documents.extend(load_file(file_path))
-
-    extra_dirs = []
-    if UPLOADS_DIR.exists():
-        extra_dirs.append(UPLOADS_DIR)
-    if LEGACY_UPLOADS_DIR.exists() and LEGACY_UPLOADS_DIR not in extra_dirs:
-        extra_dirs.append(LEGACY_UPLOADS_DIR)
-
-    for extra_dir in extra_dirs:
-        try:
-            inside_dataset = extra_dir.resolve().is_relative_to(DATASET_DIR.resolve())
-        except AttributeError:
-            inside_dataset = str(extra_dir.resolve()).startswith(str(DATASET_DIR.resolve()))
-
-        if inside_dataset:
-            continue
-
-        for file_path in iter_supported_files(extra_dir):
+        for file_path in iter_supported_files(base_dir):
             resolved = str(file_path.resolve())
             if resolved in seen_paths:
                 continue
@@ -164,14 +144,14 @@ def load_documents(input_dir=DATASET_DIR) -> List[Document]:
     return documents
 
 
-def print_load_summary(documents: List[Document], input_dir=DATASET_DIR) -> None:
+def print_load_summary(documents: List[Document]) -> None:
     counts = {}
 
     for document in documents:
         file_type = document.metadata.get("file_type", "unknown")
         counts[file_type] = counts.get(file_type, 0) + 1
 
-    print(f"Loaded {len(documents)} documents from: {Path(input_dir).resolve()}")
+    print(f"Loaded {len(documents)} documents from uploads")
     for file_type, count in sorted(counts.items()):
         print(f"- {file_type}: {count}")
 

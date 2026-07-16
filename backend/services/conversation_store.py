@@ -4,9 +4,8 @@ import uuid
 from pathlib import Path
 from typing import Any, Dict, List
 
-from config.settings import settings
-
-BASE_DIR = Path(settings.UPLOAD_FOLDER).resolve().parent / "storage" / "sessions"
+BACKEND_DIR = Path(__file__).resolve().parents[1]
+BASE_DIR = BACKEND_DIR / "storage" / "sessions"
 
 
 def _store_file_for(user_id: str) -> Path:

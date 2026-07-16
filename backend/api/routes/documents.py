@@ -10,7 +10,7 @@ from pydantic import BaseModel
 
 from config.settings import settings
 from rag.chunking import split_documents
-from rag.load import BACKEND_DIR, DATASET_DIR, load_documents, load_file
+from rag.load import BACKEND_DIR, load_file
 from rag.llm_client import stream_tokens
 from rag.rag_chain import get_retriever, reload_vector_store
 from rag.vector_store import build_vector_store, load_vector_store
@@ -195,17 +195,17 @@ def _index_uploaded_file(file_path: Path, user_id: str) -> tuple[bool, int, str]
 
 
 def _rebuild_full_index(user_id: str) -> tuple[int, int]:
-    documents = load_documents(DATASET_DIR)
     upload_dir = _user_uploads_dir(user_id)
-    extra_docs = []
+    documents = []
     if upload_dir.exists():
         for fp in upload_dir.iterdir():
             if fp.is_file() and fp.suffix.lower() in {".pdf", ".md", ".txt", ".docx", ".py", ".ipynb"}:
-                extra_docs.extend(load_file(fp))
-    nodes = split_documents(documents + extra_docs)
-    build_vector_store(nodes, user_id)
-    reload_vector_store(user_id)
-    return len(documents) + len(extra_docs), len(nodes)
+                documents.extend(load_file(fp))
+    nodes = split_documents(documents)
+    if nodes:
+        build_vector_store(nodes, user_id)
+        reload_vector_store(user_id)
+    return len(documents), len(nodes)
 
 
 @router.get("")

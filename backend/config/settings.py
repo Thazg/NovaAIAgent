@@ -19,8 +19,13 @@ class Settings:
     GROQ_API_KEY: str = os.getenv("GROQ_API_KEY", "")
     GROQ_MODEL: str = os.getenv("GROQ_MODEL", "llama-3.1-8b-instant")
 
-    EMBEDDING_MODEL: str = os.getenv("EMBEDDING_MODEL", "all-MiniLM-L6-v2")
+    GROQ_EMBEDDING_MODEL: str = os.getenv("GROQ_EMBEDDING_MODEL", "nomic-embed-text-v1.5")
+    EMBEDDING_DIM: int = int(os.getenv("EMBEDDING_DIM", "768"))
+    RRF_K: int = int(os.getenv("RRF_K", "60"))
     TOP_K: int = int(os.getenv("TOP_K", "5"))
+    BROAD_TOP_K: int = int(os.getenv("BROAD_TOP_K", "20"))
+    MIN_SIMILARITY_SCORE: float = float(os.getenv("MIN_SIMILARITY_SCORE", "0.0"))
+    RETRIEVAL_CONFIDENCE_THRESHOLD: float = float(os.getenv("RETRIEVAL_CONFIDENCE_THRESHOLD", "0.0"))
     TEMPERATURE: float = float(os.getenv("TEMPERATURE", "0.1"))
     LLM_TOP_K: int = int(os.getenv("LLM_TOP_K", "40"))
     LLM_TOP_P: float = float(os.getenv("LLM_TOP_P", "0.9"))
@@ -29,13 +34,10 @@ class Settings:
     MAX_HISTORY_MESSAGES: int = int(os.getenv("MAX_HISTORY_MESSAGES", "4"))
     MAX_CHUNK_CHARS: int = int(os.getenv("MAX_CHUNK_CHARS", "1000"))
     MAX_CONTEXT_CHARS: int = int(os.getenv("MAX_CONTEXT_CHARS", "6000"))
-    RETRIEVAL_CONFIDENCE_THRESHOLD: float = float(os.getenv("RETRIEVAL_CONFIDENCE_THRESHOLD", "0.1"))
-    BROAD_TOP_K: int = int(os.getenv("BROAD_TOP_K", "20"))
-    MIN_SIMILARITY_SCORE: float = float(os.getenv("MIN_SIMILARITY_SCORE", "0.12"))
     LOG_LEVEL: str = os.getenv("LOG_LEVEL", "INFO")
     UPLOAD_FOLDER: str = os.getenv(
         "UPLOAD_FOLDER",
-        str(BACKEND_DIR / "Dataset" / "uploads"),
+        str(BACKEND_DIR / "uploads"),
     )
 
     # Auth

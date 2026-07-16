@@ -106,6 +106,10 @@ async def chat_stream(http_request: Request, request: ChatRequest):
     except Exception:
         has_docs = False
 
+    if not language:
+        vietnamese_chars = re.search(r'[àáạãảâầấậẫẩăằắặẵẳđèéẹẽẻêềếệễểìíịĩỉòóọõỏôồốộỗổơờớợỡỡùúụũủưừứựữửỳýỵỹỷ]', question.lower())
+        language = "vietnamese" if vietnamese_chars else "english"
+
     lang_instruction = ""
     if language == "english":
         lang_instruction = "CRITICAL: You MUST respond in English regardless of the user's language."

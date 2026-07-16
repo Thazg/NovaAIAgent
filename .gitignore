@@ -27,7 +27,5 @@ Thumbs.db
 
 # Project
 backend/storage/
+backend/uploads/
 backend/Dataset/
-!backend/Dataset/uploads/
-backend/Dataset/uploads/*
-!backend/Dataset/uploads/.gitkeep
